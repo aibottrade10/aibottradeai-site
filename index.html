@@ -3,427 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AiBotTrade — ระบบเทรดทองคำอัตโนมัติด้วย AI</title>
+<title>AiBotTrade — ภาพรวมระบบเทรด AI</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<meta name="description" content="AiBotTrade — ระบบเทรด XAUUSD อัตโนมัติที่ขับเคลื่อนด้วยทีม AI หลายตัว บนสถาปัตยกรรมต้นทุน $0/เดือน ดูผลงานสดรายบอท สถิติ และบันทึกการเรียนรู้ของระบบ">
+<meta name="description" content="AiBotTrade — ภาพรวมสดของระบบเทรดอัตโนมัติ: ระบบ A (บอทหลายกลยุทธ์) + ระบบ B (5 ทีม LLM) + SevenElevenTrader บนสถาปัตยกรรมต้นทุน $0/เดือน">
 <meta name="theme-color" content="#0a0e17">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>
-  :root{
-    --bg:#0a0e17; --bg-2:#0c111c; --panel:#0f1522; --panel-2:#141b2b;
-    --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.12);
-    --ink:#e9eef7; --muted:#8a97ad; --faint:#5b6579;
-    --cyan:#38bdf8; --cyan-soft:#38bdf814; --cyan-line:#38bdf833;
-    --green:#3ecf8e; --red:#f0616d; --amber:#e8b04b;
-    --sans:"IBM Plex Sans Thai","Segoe UI",-apple-system,sans-serif;
-    --mono:"IBM Plex Mono",Consolas,monospace;
-    --sb:246px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
-  .mono{font-family:var(--mono)}
-
-  .app{display:grid;grid-template-columns:var(--sb) 1fr;min-height:100vh}
-  @media(max-width:920px){.app{grid-template-columns:1fr}}
-
-  /* ---------- sidebar ---------- */
-  aside{border-right:1px solid var(--line);background:var(--bg-2);position:sticky;top:0;height:100vh;
-    display:flex;flex-direction:column;padding:18px 12px;overflow-y:auto}
-  @media(max-width:920px){aside{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}}
-  .brand{display:flex;align-items:center;gap:10px;padding:6px 10px 4px}
-  .brand .mk{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;
-    background:linear-gradient(135deg,#0e2a3d,#0b3a52);border:1px solid var(--cyan-line)}
-  .brand .mk svg{width:16px;height:16px;stroke:var(--cyan);stroke-width:2;fill:none}
-  .brand b{font-weight:600;font-size:15px;display:block;letter-spacing:.01em}
-  .brand span{display:block;font-size:10px;color:var(--faint);font-family:var(--mono)}
-  .livebar{display:flex;align-items:center;gap:8px;margin:12px 10px 6px;padding:7px 11px;
-    border:1px solid var(--line-2);border-radius:9px;font-family:var(--mono);font-size:10.5px;color:var(--green)}
-  .livebar i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
-  .livebar.off{color:var(--faint)} .livebar.off i{background:var(--faint);box-shadow:none;animation:none}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-  .grp{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);padding:16px 12px 6px;font-family:var(--mono)}
-  nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;font-size:13.5px;color:var(--muted);
-    transition:.14s;position:relative}
-  nav a:hover{background:var(--panel);color:var(--ink)}
-  nav a.on{background:var(--cyan-soft);color:var(--cyan)}
-  nav a.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:2.5px;border-radius:3px;background:var(--cyan)}
-  nav a svg{width:15px;height:15px;flex:none;stroke:currentColor;stroke-width:1.8;fill:none}
-  .sb-foot{margin-top:auto;padding:14px 12px 4px}
-  .sb-foot small{display:block;color:var(--faint);font-size:10px;line-height:1.6}
-  .sb-foot a.ext{color:var(--cyan);font-family:var(--mono);font-size:10.5px;display:inline-flex;gap:5px;align-items:center;margin-top:9px}
-
-  /* ---------- main ---------- */
-  main{padding:0 clamp(16px,3.6vw,50px) 84px;max-width:1180px}
-  section{padding-top:44px;scroll-margin-top:16px}
-  .s-head{display:flex;align-items:baseline;gap:11px;margin-bottom:4px}
-  .s-head .no{font-family:var(--mono);font-size:11px;color:var(--cyan)}
-  h2{font-size:clamp(18px,2.8vw,24px);font-weight:600;letter-spacing:-.01em}
-  .s-lede{color:var(--muted);font-size:13px;max-width:66ch;margin-bottom:16px}
-  h1{font-size:clamp(25px,4.2vw,38px);font-weight:600;line-height:1.16;margin:8px 0 12px;letter-spacing:-.015em;max-width:22ch}
-  h1 em{font-style:normal;color:var(--cyan)}
-  .lede{color:var(--muted);max-width:60ch;font-size:14.5px}
-  .pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;
-    padding:5px 11px;border-radius:20px;background:#3ecf8e14;color:var(--green);border:1px solid #3ecf8e33}
-  .pill i{width:6px;height:6px;border-radius:50%;background:var(--green)}
-  .pill.dim{background:var(--cyan-soft);color:var(--cyan);border-color:var(--cyan-line)} .pill.dim i{background:var(--cyan)}
-
-  .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
-  @media(max-width:780px){.kpi{grid-template-columns:repeat(2,1fr)}}
-  .k{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px 15px 13px}
-  .k .l{font-size:10.5px;color:var(--muted);letter-spacing:.03em}
-  .k .n{font-family:var(--mono);font-size:22px;margin-top:6px;color:var(--ink);letter-spacing:-.01em}
-  .k .n.g{color:var(--green)} .k .n.r{color:var(--red)} .k .n.c{color:var(--cyan)}
-  .k .sub{font-size:10px;color:var(--faint);margin-top:4px;font-family:var(--mono)}
-
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:20px}
-  @media(max-width:880px){.grid2{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:17px}
-  .card h3{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.08em;margin-bottom:11px;
-    text-transform:uppercase;font-family:var(--mono)}
-
-  table{width:100%;border-collapse:collapse;font-size:12.5px}
-  th{text-align:left;color:var(--faint);font-weight:500;font-size:10px;text-transform:uppercase;
-    letter-spacing:.06em;padding:0 8px 7px 0;font-family:var(--mono)}
-  td{padding:7px 8px 7px 0;border-top:1px solid var(--line);color:var(--muted)}
-  td.v{font-family:var(--mono);text-align:right;padding-right:0}
-  td b{color:var(--ink);font-weight:500}
-  .g{color:var(--green)} .r{color:var(--red)} .c{color:var(--cyan)} .am{color:var(--amber)}
-
-  /* ---------- per-bot cards ---------- */
-  .botgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
-  @media(max-width:1000px){.botgrid{grid-template-columns:1fr 1fr}}
-  @media(max-width:620px){.botgrid{grid-template-columns:1fr}}
-  .bc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px;display:flex;flex-direction:column;gap:11px}
-  .bc .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-  .bc .nm{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px}
-  .bc .nm .dot{width:7px;height:7px;border-radius:50%;flex:none}
-  .bc .chip{font-family:var(--mono);font-size:9.5px;padding:2px 7px;border-radius:11px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
-  .bc .big{font-family:var(--mono);font-size:24px;letter-spacing:-.02em;line-height:1}
-  .bc .metrics{display:flex;gap:16px;font-size:11px;color:var(--muted);font-family:var(--mono)}
-  .bc .metrics b{color:var(--ink);font-weight:500}
-  .bc .bar{height:4px;border-radius:3px;background:var(--panel-2);overflow:hidden;display:flex}
-  .bc .bar .w{background:var(--green)} .bc .bar .l{background:var(--red)}
-  .bc .rec{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line);padding-top:9px}
-  .bc .rec .row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;padding:3px 0}
-  .bc .rec .row .s{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .bc .rec .row .p{font-family:var(--mono);flex:none}
-  .bc .empty{font-size:11px;color:var(--faint);font-family:var(--mono);border-top:1px solid var(--line);padding-top:9px}
-
-  .tl{border-left:2px solid var(--line-2);margin-top:18px;padding-left:20px;display:flex;flex-direction:column;gap:15px}
-  .tl .ev{position:relative}
-  .tl .ev::before{content:"";position:absolute;left:-27px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--cyan);border:2px solid var(--bg)}
-  .tl .d{font-family:var(--mono);font-size:10px;color:var(--cyan)}
-  .tl .b{color:var(--muted);font-size:12.5px;margin-top:3px}
-  .tl .b b{color:var(--ink);font-weight:500}
-  .flag{display:inline-block;font-family:var(--mono);font-size:9.5px;padding:1px 7px;border-radius:10px;margin-right:5px;
-    background:#e8b04b16;color:var(--amber);border:1px solid #e8b04b30}
-
-  .tbl{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--panel);margin-top:14px}
-  .tr{display:grid;grid-template-columns:158px 1fr;border-bottom:1px solid var(--line)}
-  .tr:last-child{border-bottom:none}
-  .tk{padding:13px 15px;border-right:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--cyan);background:var(--panel-2)}
-  .tv{padding:13px 17px;font-size:13px;color:var(--muted)}
-  .tv b{color:var(--ink)}
-  @media(max-width:600px){.tr{grid-template-columns:1fr}.tk{border-right:none;border-bottom:1px solid var(--line)}}
-
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
-  @media(max-width:860px){.steps{grid-template-columns:1fr}}
-  .step{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px}
-  .step .n{font-family:var(--mono);font-size:10.5px;color:var(--cyan);background:var(--cyan-soft);border:1px solid var(--cyan-line);padding:2px 8px;border-radius:13px}
-  .step h4{font-size:13.5px;font-weight:600;margin:10px 0 6px}
-  .step p{font-size:12px;color:var(--muted)}
-
-  .btn{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;padding:10px 16px;border-radius:9px;border:1px solid var(--line-2);transition:.15s;margin-top:20px}
-  .btn:hover{border-color:var(--cyan);color:var(--cyan)}
-  .loading{color:var(--faint);font-size:11.5px;font-family:var(--mono);padding:8px 0}
-  .muted-note{font-size:10.5px;color:var(--faint);font-family:var(--mono);margin-top:9px}
-  .disc{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);font-size:11px;color:var(--faint);line-height:1.8;max-width:90ch}
-</style>
+<link rel="stylesheet" href="/assets/shell.css">
 </head>
 <body>
 <div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">01</span><h1>ภาพรวม · AI Trading A + B + 7-11</h1></div>
+    <p class="plede">ระบบเทรดอัตโนมัติ 3 ส่วนที่รันคู่ขนานบนบัญชีเดโม่ MT5 — ตัวเลขทั้งหมดในหน้านี้ดึงสดจากแดชบอร์ดจริง อัปเดตทุก 60 วินาที</p>
 
-  <aside>
-    <div class="brand">
-      <span class="mk"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 4 5-8 4 5"/></svg></span>
-      <span><b>AiBotTrade</b><span>trading system</span></span>
+    <div class="kpi k3">
+      <div class="k"><div class="l">กำไรสุทธิรวม (ทั้ง 3 ระบบ)</div><div class="n" id="k-all">—</div><div class="sub" id="k-all-sub">รวม A + B + 7-11</div></div>
+      <div class="k"><div class="l">ไม้ปิดสะสม</div><div class="n" id="k-trades">—</div><div class="sub">ทุกระบบรวมกัน</div></div>
+      <div class="k"><div class="l">โปรเซสทำงาน 24 ชม.</div><div class="n c">23</div><div class="sub">watchdog เฝ้ากู้อัตโนมัติ</div></div>
     </div>
-    <div class="livebar" id="livebar"><i></i><span id="livetxt">กำลังเชื่อมต่อ…</span></div>
 
-    <div class="grp">ภาพรวม</div>
-    <nav id="nav">
-      <a href="#overview" class="on"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10"/></svg>หน้าหลัก</a>
-      <a href="#bots"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>ผลงานรายบอท</a>
-    </nav>
-    <div class="grp">AI &amp; สัญญาณ</div>
-    <nav>
-      <a href="#aibrain"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/></svg>AI Brain</a>
-      <a href="#signals"><svg viewBox="0 0 24 24"><path d="M4 12h4l3-8 4 16 3-8h2"/></svg>สัญญาณ</a>
-    </nav>
-    <div class="grp">เอกสาร</div>
-    <nav>
-      <a href="#architecture"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg>สถาปัตยกรรม</a>
-      <a href="#summary"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 11h16M4 17h10"/></svg>สรุปโปรเจกต์</a>
-    </nav>
-
-    <div class="sb-foot">
-      <small>โปรเจกต์วิจัย/พัฒนา · บัญชีเดโม่<br>ไม่ใช่คำแนะนำการลงทุน</small>
-      <a class="ext" href="https://app.aibottradeai.com" target="_blank" rel="noopener">แดชบอร์ดสด ↗</a>
+    <div class="sec">
+      <div class="st">แยกตามระบบ</div>
+      <div class="cardgrid" id="sysgrid"><div class="loading">กำลังโหลด…</div></div>
     </div>
-  </aside>
-
-  <main>
-
-    <!-- 01 · หน้าหลัก -->
-    <section id="overview">
-      <span class="pill" id="statuspill"><i></i>สถานะระบบ: กำลังโหลด…</span>
-      <h1>ระบบเทรดทองคำที่ <em>ทีม&nbsp;AI</em> ดูแลกันเอง</h1>
-      <p class="lede">เทรด XAUUSD อัตโนมัติด้วยกลยุทธ์หลายชั้นและทีม LLM ที่แข่งกันตัดสินใจ —
-        รันบนสถาปัตยกรรมต้นทุน <b style="color:var(--cyan)">$0/เดือน</b> · ตัวเลขทั้งหมดในหน้านี้ดึงสดจากแดชบอร์ดจริง</p>
-
-      <div class="kpi">
-        <div class="k"><div class="l">กำไรสุทธิรวม</div><div class="n" id="k-net">—</div><div class="sub" id="k-net-sub">journal</div></div>
-        <div class="k"><div class="l">Win Rate</div><div class="n c" id="k-wr">—</div><div class="sub" id="k-wr-sub">W/L</div></div>
-        <div class="k"><div class="l">เทรดสะสม</div><div class="n" id="k-tr">—</div><div class="sub">ไม้ปิดใน journal</div></div>
-        <div class="k"><div class="l">วันนี้</div><div class="n" id="k-today">—</div><div class="sub" id="k-today-sub">P&amp;L วันนี้</div></div>
-      </div>
-
-      <div class="grid2">
-        <div class="card">
-          <h3>ไม้ที่เปิดอยู่ · System A</h3>
-          <table><thead><tr><th>สินทรัพย์</th><th>ทิศทาง</th><th style="text-align:right">ลอต</th><th style="text-align:right">กำไรลอย</th></tr></thead>
-          <tbody id="pos-body"><tr><td colspan="4" class="loading">กำลังโหลด…</td></tr></tbody></table>
-        </div>
-        <div class="card">
-          <h3>เทรดล่าสุด (ทุกบอท)</h3>
-          <table><thead><tr><th>กลยุทธ์</th><th>สินทรัพย์</th><th style="text-align:right">ผล</th></tr></thead>
-          <tbody id="recent-body"><tr><td colspan="3" class="loading">กำลังโหลด…</td></tr></tbody></table>
-        </div>
-      </div>
-    </section>
-
-    <!-- 02 · ผลงานรายบอท -->
-    <section id="bots">
-      <div class="s-head"><span class="no">02</span><h2>ผลงานรายบอท</h2></div>
-      <p class="s-lede">แต่ละบอทมีวิธีคิดคนละแบบและรันแยกอิสระ — การ์ดด้านล่างสรุปกำไรสุทธิ อัตราชนะ จำนวนไม้ และไม้ล่าสุดของแต่ละตัว จากผลจริงที่ปิดแล้ว</p>
-      <div class="botgrid" id="botgrid"><div class="loading">กำลังโหลด…</div></div>
-      <p class="muted-note">* กำไร/ขาดทุนเป็นดอลลาร์บนบัญชีเดโม่ · เรียงตามกำไรสุทธิมากไปน้อย</p>
-    </section>
-
-    <!-- 03 · AI Brain -->
-    <section id="aibrain">
-      <div class="s-head"><span class="no">03</span><h2>AI Brain</h2></div>
-      <p class="s-lede">เอเจนต์วิเคราะห์อ่าน journal ทุก 2 ชั่วโมง หาแพทเทิร์นที่คนตรวจงานจะสะดุด แล้วเขียนบันทึกไว้ — นี่คือรายการล่าสุดตามเวลาจริง</p>
-      <div class="tl" id="brain-tl"><div class="loading">กำลังโหลด…</div></div>
-    </section>
-
-    <!-- 04 · สัญญาณ -->
-    <section id="signals">
-      <div class="s-head"><span class="no">04</span><h2>สัญญาณ</h2></div>
-      <p class="s-lede">เมื่อบอทเปิดไม้จริงที่ผ่านทุกด่านกรอง ระบบส่งสัญญาณเดียวกันไป Telegram ให้เทรดตามมือได้ — ด้านล่างคือผลของสัญญาณที่ปิดไปแล้ว</p>
-      <div class="kpi">
-        <div class="k"><div class="l">สัญญาณที่ปิดแล้ว</div><div class="n" id="sg-total">—</div></div>
-        <div class="k"><div class="l">ชนะ</div><div class="n g" id="sg-win">—</div></div>
-        <div class="k"><div class="l">Win Rate</div><div class="n c" id="sg-wr">—</div></div>
-        <div class="k"><div class="l">R รวม</div><div class="n" id="sg-r">—</div></div>
-      </div>
-      <div class="card" style="margin-top:18px">
-        <h3>สัญญาณล่าสุด</h3>
-        <table><thead><tr><th>วันที่</th><th>กลยุทธ์</th><th>สินทรัพย์</th><th style="text-align:right">R</th></tr></thead>
-        <tbody id="sig-body"><tr><td colspan="4" class="loading">กำลังโหลด…</td></tr></tbody></table>
-      </div>
-    </section>
-
-    <!-- 05 · สถาปัตยกรรม -->
-    <section id="architecture">
-      <div class="s-head"><span class="no">05</span><h2>สถาปัตยกรรม</h2></div>
-      <p class="s-lede">ทุกการตัดสินใจออกแบบให้ตรวจสอบย้อนหลังได้ และไม่มีชิ้นส่วนไหนที่พังแล้วเงียบ</p>
-      <div class="tbl">
-        <div class="tr"><div class="tk">ต้นทุน $0</div><div class="tv"><b>MetaTrader 5 Python</b> + ไฟล์ JSON ในเครื่อง + Telegram (ฟรีทั้งหมด) — ไม่มี API เสียเงินเข้า loop เทรด</div></div>
-        <div class="tr"><div class="tk">Trade Journal กลาง</div><div class="tv">ทุกไม้บันทึกพร้อมเงื่อนไขตอนเข้าครบ: คะแนน, session, regime, ATR, spread, slippage — รู้ว่า "ทำไม" ไม่ใช่แค่กำไร/ขาดทุน</div></div>
-        <div class="tr"><div class="tk">พิสูจน์ก่อนเชื่อ</div><div class="tv">ทุกการแก้กลยุทธ์ผ่าน <b>bar-walk backtest กับแท่งเทียนจริง</b> ก่อนเสมอ · ไอเดียใหม่ทดสอบแบบกระดาษจนพิสูจน์ตัวเอง</div></div>
-        <div class="tr"><div class="tk">เฝ้าตัวเอง</div><div class="tv">เอเจนต์หลายตัวรันเป็นรอบ — วิเคราะห์แพทเทิร์น / เฝ้า process·tick·SL-TP / แก้บั๊ก / เฝ้าทีม AI / ค้นเทคนิค + <b>dead-man's-switch</b></div></div>
-        <div class="tr"><div class="tk">กันชนหลายชั้น</div><div class="tv">ก่อนไม้เปิดต้องผ่าน correlation cap · news blackout · RR gate เชิงคณิตศาสตร์ · WR throttle · safety-lock ระดับเครื่องมือ</div></div>
-        <div class="tr"><div class="tk">แบ็กอัพ</div><div class="tv">มิเรอร์ทั้งโปรเจกต์ + สแนปช็อตไฟล์สถานะรายวันไปไดรฟ์แยก · มีตัวเฝ้าความสดของแบ็กอัพเอง</div></div>
-      </div>
-      <a class="btn" href="https://app.aibottradeai.com/architecture" target="_blank" rel="noopener">ดูผังเต็ม ↗</a>
-    </section>
-
-    <!-- 06 · สรุปโปรเจกต์ -->
-    <section id="summary">
-      <div class="s-head"><span class="no">06</span><h2>สรุปโปรเจกต์</h2></div>
-      <p class="s-lede">ระบบบอทเทรดอัตโนมัติหลายตัว พร้อมวงจรเรียนรู้–ตรวจสอบตัวเอง บนบัญชีเดโม่ MT5</p>
-
-      <h3 style="font-size:11px;color:var(--muted);margin:18px 0 0;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">วงจรเรียนรู้–ตรวจสอบตัวเอง</h3>
-      <div class="steps">
-        <div class="step"><span class="n">1</span><h4>บันทึกครบทุกเงื่อนไข</h4><p>ทุกไม้บันทึกคะแนน/session/regime/ATR/spread/slippage — ไม่ใช่แค่กำไรขาดทุน แต่รู้ว่าทำไม</p></div>
-        <div class="step"><span class="n">2</span><h4>วิเคราะห์รายคืนอัตโนมัติ</h4><p>Analyst หา pattern → Optimizer เสนอปรับ → Tester ทดสอบย้อนหลัง → Deployer เขียน dry-run + Config Auditor ตรวจว่าใช้จริง</p></div>
-        <div class="step"><span class="n">3</span><h4>สนามซ้อมต่อเนื่อง</h4><p>ทุกบอทมี "แล็บ" ทดสอบไอเดียใหม่แบบกระดาษคู่ขนาน — พิสูจน์ตัวเองก่อนถึงจะได้เข้าโค้ดจริง</p></div>
-      </div>
-
-      <p class="disc">
-        AiBotTrade เป็นโปรเจกต์วิจัยและพัฒนาระบบเทรดอัตโนมัติ ทำงานบนบัญชีทดลอง (เดโม่) เท่านั้น
-        ข้อมูลบนเว็บนี้จัดทำเพื่อบันทึกกระบวนการพัฒนา ไม่ถือเป็นคำแนะนำการลงทุน การชักชวนให้ลงทุน
-        หรือการรับประกันผลตอบแทนใด ๆ ผลงานในอดีตไม่ได้รับประกันผลในอนาคต การเทรดสินทรัพย์มีความเสี่ยงสูง
-        และอาจสูญเสียเงินทั้งหมดได้ · &copy; 2026 AiBotTrade
-      </p>
-    </section>
-
   </main>
 </div>
 
 <script>
-(function(){
-  var API = "https://app.aibottradeai.com";
-  var fmtUSD = function(n){ if(n==null||isNaN(n)) return "—";
-    return (n<0?"-":"+") + "$" + Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); };
-  var fmtInt = function(n){ return n==null?"—":Number(n).toLocaleString("en-US"); };
-  var cls = function(n){ return n>0?"g":(n<0?"r":""); };
-  var esc = function(s){ return String(s==null?"":s).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); };
-
-  function getJSON(path){
-    var ctl = new AbortController(), t = setTimeout(function(){ctl.abort();}, 8000);
-    return fetch(API+path, {signal:ctl.signal, cache:"no-store"})
-      .then(function(r){ clearTimeout(t); if(!r.ok) throw 0; return r.json(); })
-      .catch(function(){ clearTimeout(t); return null; });
-  }
-  function setLive(ok){
-    var b=document.getElementById("livebar"), tx=document.getElementById("livetxt"), sp=document.getElementById("statuspill");
-    if(ok){ b.className="livebar"; tx.textContent="LIVE · อัปเดตทุก 60 วิ";
-      sp.className="pill"; sp.innerHTML="<i></i>สถานะระบบ: ปกติ"; }
-    else { b.className="livebar off"; tx.textContent="เชื่อมต่อแดชบอร์ดไม่ได้";
-      sp.className="pill dim"; sp.innerHTML="<i></i>สถานะ: ออฟไลน์ชั่วคราว"; }
-  }
-
-  function renderKPI(stats, today){
-    var m = (stats && stats.summary) || null;
-    if(m){
-      var ne=document.getElementById("k-net"); ne.textContent=fmtUSD(m.net_profit); ne.className="n "+cls(m.net_profit);
-      document.getElementById("k-net-sub").textContent=fmtInt(m.total_closed)+" เทรด";
-      document.getElementById("k-wr").textContent=(m.win_rate!=null? m.win_rate.toFixed(1)+"%":"—");
-      document.getElementById("k-wr-sub").textContent=fmtInt(m.wins)+"W / "+fmtInt(m.losses)+"L";
-      document.getElementById("k-tr").textContent=fmtInt(m.total_closed);
-    }
-    var a = (today && today.auto) || null;
-    if(a){
-      var te=document.getElementById("k-today"); te.textContent=fmtUSD(a.pnl); te.className="n "+cls(a.pnl);
-      document.getElementById("k-today-sub").textContent=(a.total!=null? a.wins+"W / "+a.losses+"L":"—");
-    }
-    return !!m;
-  }
-
-  function renderPositions(pp){
-    var pos = (pp && pp.positions) || [];
-    var pb=document.getElementById("pos-body");
-    pb.innerHTML = pos.length ? pos.map(function(p){
-      return '<tr><td><b>'+esc(p.symbol)+'</b></td><td>'+(p.type==="buy"?"ซื้อ":"ขาย")+
-        '</td><td class="v">'+p.volume+'</td><td class="v '+cls(p.profit)+'">'+fmtUSD(p.profit)+'</td></tr>';
-    }).join("") : '<tr><td colspan="4" class="loading">ไม่มีไม้เปิด</td></tr>';
-  }
-
-  function renderRecent(rows){
-    var el=document.getElementById("recent-body");
-    if(!rows||!rows.length){ el.innerHTML='<tr><td colspan="3" class="loading">—</td></tr>'; return; }
-    el.innerHTML = rows.slice(0,8).map(function(t){
-      return '<tr><td><b>'+esc(t.strategy)+'</b></td><td>'+esc(t.symbol||"")+
-        '</td><td class="v '+cls(t.profit)+'">'+fmtUSD(t.profit)+'</td></tr>';
-    }).join("");
-  }
-
-  var BOT_DESC = {
-    "Classic":"16 กลยุทธ์ · ให้คะแนน 0–100 ทุก 30 วิ",
-    "Cent":"engine เดียวกับ Classic · ตัวเทียบผล A/B",
-    "APEX":"Gold Sniper · 5 engines (ORACLE→SAGE)",
-    "NEXUS":"สภา 13 เอเจนต์โหวต · Kelly sizing เข้มสุด",
-    "Basket":"multi-pair confluence · ทอง + 6 forex",
-    "SevenEleven":"เกมเทรด RPG · กลยุทธ์ = อาวุธ",
-    "BTC":"engine Classic · เก็บข้อมูลเสาร์–อาทิตย์"
-  };
-  function renderBots(d){
-    var el=document.getElementById("botgrid");
-    var rows=(d&&d.bots)||[];
-    rows=rows.filter(function(b){ return b.bot!=="อื่นๆ"; });
-    if(!rows.length){ el.innerHTML='<div class="loading">โหลดข้อมูลรายบอทไม่ได้</div>'; return; }
-    el.innerHTML = rows.map(function(b){
-      var w=b.wins||0, l=b.losses||0, tot=w+l||1;
-      var recent=(b.recent||[]).map(function(x){
-        return '<div class="row"><span class="s">'+esc(x.strategy||"")+'</span>'+
-          '<span class="p '+(x.result==="win"?"g":(x.result==="loss"?"r":""))+'">'+fmtUSD(x.profit)+'</span></div>';
-      }).join("");
-      return '<div class="bc">'+
-        '<div class="top"><div class="nm"><span class="dot" style="background:'+(b.net_profit>=0?"var(--green)":"var(--red)")+'"></span>'+esc(b.bot)+'</div>'+
-          '<span class="chip">'+esc(BOT_DESC[b.bot]||"")+'</span></div>'+
-        '<div class="big '+cls(b.net_profit)+'">'+fmtUSD(b.net_profit)+'</div>'+
-        '<div class="metrics"><span>WR <b>'+b.win_rate.toFixed(1)+'%</b></span><span>ไม้ <b>'+fmtInt(b.trades)+'</b></span><span>'+w+'W / '+l+'L</span></div>'+
-        '<div class="bar"><span class="w" style="width:'+(w/tot*100)+'%"></span><span class="l" style="width:'+(l/tot*100)+'%"></span></div>'+
-        (recent? '<div class="rec">'+recent+'</div>' : '<div class="empty">ยังไม่มีไม้ปิด</div>')+
-      '</div>';
-    }).join("");
-  }
-
-  function renderBrain(kb){
-    var el=document.getElementById("brain-tl");
-    var entries=(kb && (kb.entries||kb))||[];
-    if(!entries.length){ el.innerHTML='<div class="loading">ยังไม่มีข้อมูล</div>'; return; }
-    el.innerHTML = entries.slice(-8).reverse().map(function(e){
-      var flags=(e.flagged_strategies||[]).map(function(f){ return '<span class="flag">'+esc(f.strategy||"")+'</span>'; }).join("");
-      var body=(e.lessons&&e.lessons[0]) ? e.lessons[0]
-             : (e.bugs_found&&e.bugs_found[0]) ? ("บั๊ก: "+esc(e.bugs_found[0].detail||e.bugs_found[0]))
-             : "รอบตรวจปกติ ไม่มีรายการเด่น";
-      return '<div class="ev"><div class="d">'+esc(e.timestamp||"")+' · journal '+fmtInt(e.journal_total)+
-        ' · WR '+(e.journal_wr!=null?e.journal_wr+"%":"—")+'</div><div class="b">'+flags+esc(body)+'</div></div>';
-    }).join("");
-  }
-
-  function renderSignals(mt){
-    if(!mt) return;
-    var closed=mt.closed||[];
-    var resolved=closed.filter(function(x){ return x.result==="win"||x.result==="loss"; });
-    var wins=resolved.filter(function(x){ return x.result==="win"; }).length;
-    var rsum=resolved.reduce(function(a,x){ return a+(typeof x.r_multiple==="number"?x.r_multiple:0); },0);
-    document.getElementById("sg-total").textContent=fmtInt(resolved.length);
-    document.getElementById("sg-win").textContent=fmtInt(wins);
-    document.getElementById("sg-wr").textContent=resolved.length?(wins/resolved.length*100).toFixed(0)+"%":"—";
-    var re=document.getElementById("sg-r"); re.textContent=(rsum>=0?"+":"")+rsum.toFixed(1)+"R"; re.className="n "+cls(rsum);
-    var el=document.getElementById("sig-body");
-    var recent=resolved.slice(-8).reverse();
-    el.innerHTML = recent.length ? recent.map(function(x){
-      var d=(x.resolved_utc||x.taken_utc||x.sent_utc||"").slice(0,10);
-      var r=(typeof x.r_multiple==="number")?((x.r_multiple>=0?"+":"")+x.r_multiple.toFixed(2)):"—";
-      return '<tr><td class="mono" style="font-size:10.5px">'+d+'</td><td><b>'+esc(x.strategy||"")+
-        '</td><td>'+esc(x.symbol||"")+'</td><td class="v '+(x.result==="win"?"g":"r")+'">'+r+'</td></tr>';
-    }).join("") : '<tr><td colspan="4" class="loading">ยังไม่มีสัญญาณที่ปิด</td></tr>';
-  }
-
+window.AB_INIT = function(){
+  var $ = function(id){ return document.getElementById(id); };
   function refresh(){
-    Promise.all([ getJSON("/api/stats"), getJSON("/api/stats_period?period=today"),
-                  getJSON("/api/positions_public"), getJSON("/trade_history.json"),
-                  getJSON("/api/by_bot"), getJSON("/ai_brain_knowledge.json"),
-                  getJSON("/api/manual_trades") ])
+    Promise.all([ AB.getA("/api/stats"), AB.getB("/api/overview"), AB.getA("/api/seveneleven") ])
     .then(function(r){
-      var ok = renderKPI(r[0], r[1]);
-      renderPositions(r[2]);
-      renderRecent(r[3]);
-      renderBots(r[4]);
-      renderBrain(r[5]);
-      renderSignals(r[6]);
-      setLive(ok);
+      var A=r[0], B=r[1], S=r[2];
+      var aNet = A && A.summary ? A.summary.net_profit : null;
+      var aTr  = A && A.summary ? A.summary.total_closed : null;
+      var aWr  = A && A.summary ? A.summary.win_rate : null;
+      var bNet = (B && B.real_account && B.real_account.balance!=null) ? (B.real_account.balance - (B.real_account.baseline||0)) : null;
+      var bTr  = B ? ((B.total_wins||0)+(B.total_losses||0)) : null;
+      var bWr  = B ? (B.total_wins+B.total_losses ? B.total_wins/(B.total_wins+B.total_losses)*100 : null) : null;
+      var sNet = (S && S.ok) ? S.day_pl!=null ? null : null : null; // 7-11 ไม่มี net ตรงๆ; ใช้ EXP รวมแทนด้านล่าง
+      var sExp = (S && S.ok && S.level_exp!=null) ? S.level_exp - (S.initial_hp!=null? 0 : 0) : null;
+
+      var parts = [aNet, bNet].filter(function(x){ return typeof x==="number"; });
+      var total = parts.length ? parts.reduce(function(a,b){return a+b;},0) : null;
+      var te=$("k-all"); te.textContent=AB.fmtUSD(total); te.className="n "+AB.cls(total);
+      $("k-all-sub").textContent = "A "+AB.fmtUSD(aNet)+" · B "+AB.fmtUSD(bNet);
+      var trParts=[aTr,bTr,(S&&S.ok?S.stats&&S.stats.total_trades:null)].filter(function(x){return typeof x==="number";});
+      $("k-trades").textContent = AB.fmtInt(trParts.reduce(function(a,b){return a+b;},0));
+
+      var cards = [];
+      // System A
+      cards.push(sysCard("ระบบ A","/system-a","บอทหลายกลยุทธ์ · ทองคำ + BTC",
+        aNet, "WR "+AB.pct(aWr)+" · "+AB.fmtInt(aTr)+" ไม้"));
+      // System B
+      var bLine = B ? ("บัญชี "+AB.fmtUSD(B.real_account? (B.real_account.pnl_pct) : null).replace("$","")+"% · "+
+                       (B.n_teams||5)+" ทีม LLM") : "5 ทีม LLM แข่งกัน";
+      cards.push(sysCard("ระบบ B","/system-b","5 ทีม LLM แข่งตัดสินใจ · ทองคำ",
+        bNet, "WR "+AB.pct(bWr)+" · "+AB.fmtInt(bTr)+" ไม้"));
+      // 7-11
+      var sRank = (S && S.ok && S.rank) ? S.rank.name : "—";
+      var sWr = (S && S.ok && S.stats) ? S.stats.total_winrate : null;
+      var sTr = (S && S.ok && S.stats) ? S.stats.total_trades : null;
+      cards.push(sysCard("7-11","/seven-eleven","เกมเทรด RPG · 7 คู่เงิน",
+        null, "แรงค์ "+sRank+" · WR "+AB.pct(sWr)+" · "+AB.fmtInt(sTr)+" ไม้", "วันนี้ "+AB.fmtUSD(S&&S.ok?S.day_pl:null)));
+
+      $("sysgrid").innerHTML = cards.join("");
+      AB.live(!!(A||B||S));
     });
   }
-
-  var links=[].slice.call(document.querySelectorAll("aside nav a"));
-  var secs=links.map(function(a){ return document.querySelector(a.getAttribute("href")); });
-  function spy(){
-    var y=window.scrollY+130, cur=0;
-    secs.forEach(function(s,i){ if(s && s.offsetTop<=y) cur=i; });
-    links.forEach(function(a,i){ a.classList.toggle("on", i===cur); });
+  function sysCard(name, href, desc, net, metrics, extra){
+    var dot = net==null ? "var(--cyan)" : (net>=0?"var(--green)":"var(--red)");
+    return '<a class="bc link" href="'+href+'">'+
+      '<div class="top"><div class="nm"><span class="dot" style="background:'+dot+'"></span>'+AB.esc(name)+'</div>'+
+        '<span class="chip">'+AB.esc(desc)+'</span></div>'+
+      (net!=null ? '<div class="big '+AB.cls(net)+'">'+AB.fmtUSD(net)+'</div>' : '<div class="big c" style="font-size:16px">'+(extra? AB.esc(extra):'ดูรายละเอียด')+'</div>')+
+      '<div class="metrics"><span>'+AB.esc(metrics)+'</span></div>'+
+      '<div class="go">เปิดหน้า '+AB.esc(name)+' →</div>'+
+    '</a>';
   }
-  window.addEventListener("scroll", spy, {passive:true});
-  spy(); refresh(); setInterval(refresh, 60000);
-})();
+  AB.every(refresh);
+};
 </script>
+<script src="/assets/shell.js"></script>
 </body>
 </html>

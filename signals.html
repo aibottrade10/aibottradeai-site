@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สัญญาณ — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="สัญญาณเทรดของ AiBotTrade — เมื่อบอทเปิดไม้จริงที่ผ่านทุกด่านกรอง ระบบส่งสัญญาณเดียวกันไป Telegram ให้เทรดตามมือ ดูผลของสัญญาณที่ปิดแล้ว">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css">
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">08</span><h1>สัญญาณ</h1></div>
+    <p class="plede">เมื่อบอทเปิดไม้จริงที่ผ่านทุกด่านกรองแล้ว ระบบส่งสัญญาณเดียวกัน (จุดเข้า/SL/TP/เหตุผล) ไป Telegram ให้เทรดตามมือได้ — ด้านล่างคือผลของสัญญาณที่ปิดไปแล้ว วัดกับแท่งเทียนจริง</p>
+    <div class="kpi">
+      <div class="k"><div class="l">สัญญาณที่ปิดแล้ว</div><div class="n" id="sg-total">—</div></div>
+      <div class="k"><div class="l">ชนะ</div><div class="n g" id="sg-win">—</div></div>
+      <div class="k"><div class="l">Win Rate</div><div class="n c" id="sg-wr">—</div></div>
+      <div class="k"><div class="l">R รวม</div><div class="n" id="sg-r">—</div></div>
+    </div>
+    <div class="card" style="margin-top:18px"><h3>สัญญาณล่าสุด</h3>
+      <table><thead><tr><th>วันที่</th><th>กลยุทธ์</th><th>สินทรัพย์</th><th style="text-align:right">R</th></tr></thead>
+      <tbody id="sig"><tr><td colspan="4" class="loading">กำลังโหลด…</td></tr></tbody></table></div>
+  </main>
+</div>
+<script>
+window.AB_INIT = function(){
+  var $ = function(id){ return document.getElementById(id); };
+  function refresh(){
+    AB.getA("/api/manual_trades").then(function(mt){
+      if(!mt){ AB.live(false); return; }
+      var resolved = (mt.closed||[]).filter(function(x){ return x.result==="win"||x.result==="loss"; });
+      var wins = resolved.filter(function(x){ return x.result==="win"; }).length;
+      var rsum = resolved.reduce(function(a,x){ return a+(typeof x.r_multiple==="number"?x.r_multiple:0); },0);
+      $("sg-total").textContent = AB.fmtInt(resolved.length);
+      $("sg-win").textContent = AB.fmtInt(wins);
+      $("sg-wr").textContent = resolved.length ? (wins/resolved.length*100).toFixed(0)+"%" : "—";
+      var re=$("sg-r"); re.textContent=(rsum>=0?"+":"")+rsum.toFixed(1)+"R"; re.className="n "+AB.cls(rsum);
+      var recent = resolved.slice(-12).reverse();
+      $("sig").innerHTML = recent.length ? recent.map(function(x){
+        var d=(x.resolved_utc||x.taken_utc||x.sent_utc||"").slice(0,10);
+        var r=(typeof x.r_multiple==="number")?((x.r_multiple>=0?"+":"")+x.r_multiple.toFixed(2)):"—";
+        return '<tr><td class="mono" style="font-size:10.5px">'+d+'</td><td><b>'+AB.esc(x.strategy||"")+
+          '</td><td>'+AB.esc(x.symbol||"")+'</td><td class="v '+(x.result==="win"?"g":"r")+'">'+r+'</td></tr>';
+      }).join("") : '<tr><td colspan="4" class="loading">ยังไม่มีสัญญาณที่ปิด</td></tr>';
+      AB.live(true);
+    });
+  }
+  AB.every(refresh);
+};
+</script>
+<script src="/assets/shell.js"></script>
+</body>
+</html>

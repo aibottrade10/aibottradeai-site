@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Brain — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="AI Brain ของ AiBotTrade — เอเจนต์วิเคราะห์อ่าน trade journal ทุก 2 ชั่วโมง หาแพทเทิร์นที่คนตรวจงานจะสะดุด แล้วบันทึกไว้ ดู timeline ล่าสุด">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css">
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">07</span><h1>AI Brain</h1></div>
+    <p class="plede">เอเจนต์วิเคราะห์อ่าน journal ทุก 2 ชั่วโมง หาแพทเทิร์นที่คนตรวจงานจะสะดุด — strategy ที่ผลผิดปกติในตัวอย่างเล็ก, win/loss cluster, บั๊กที่ข้อมูลชี้ — แล้วเขียนบันทึกไว้ให้ระบบ Optimizer อ่านต่อ</p>
+    <div class="tl" id="tl"><div class="loading">กำลังโหลด…</div></div>
+  </main>
+</div>
+<script>
+window.AB_INIT = function(){
+  function refresh(){
+    AB.getA("/ai_brain_knowledge.json").then(function(kb){
+      var entries = (kb && (kb.entries||kb)) || [];
+      var el = document.getElementById("tl");
+      if(!entries.length){ el.innerHTML='<div class="loading">ยังไม่มีข้อมูล</div>'; AB.live(!!kb); return; }
+      el.innerHTML = entries.slice(-14).reverse().map(function(e){
+        var flags=(e.flagged_strategies||[]).map(function(f){ return '<span class="flag">'+AB.esc(f.strategy||"")+'</span>'; }).join("");
+        var body=(e.lessons&&e.lessons[0]) ? e.lessons[0]
+               : (e.bugs_found&&e.bugs_found[0]) ? ("บั๊ก: "+(e.bugs_found[0].detail||e.bugs_found[0]))
+               : "รอบตรวจปกติ ไม่มีรายการเด่น";
+        return '<div class="ev"><div class="d">'+AB.esc(e.timestamp||"")+' · journal '+AB.fmtInt(e.journal_total)+
+          ' · WR '+(e.journal_wr!=null?e.journal_wr+"%":"—")+'</div><div class="b">'+flags+AB.esc(body)+'</div></div>';
+      }).join("");
+      AB.live(true);
+    });
+  }
+  AB.every(refresh);
+};
+</script>
+<script src="/assets/shell.js"></script>
+</body>
+</html>

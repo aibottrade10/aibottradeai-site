@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ห้องประชุม ทีมบี — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="ห้องประชุม AI ของระบบ B — เมื่อราคาทองขยับเกินเกณฑ์ ทีม LLM เรียกประชุมย่อย แสดงความเห็น bullish/bearish พร้อมระดับความมั่นใจ">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css">
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">04</span><h1>ห้องประชุม ทีมบี</h1></div>
+    <p class="plede">เมื่อราคาทองคำขยับเกินเกณฑ์จากประชุมครั้งก่อน ระบบ B เรียก "ประชุมย่อย" ให้ผู้เชี่ยวชาญ AI แต่ละมุมมองแสดงความเห็นทิศทาง + ระดับความมั่นใจ ก่อนที่หัวหน้าทีมจะเอาไปใช้ตัดสินใจ</p>
+    <div class="tl" id="mtl"><div class="loading">กำลังโหลด…</div></div>
+  </main>
+</div>
+
+<script>
+window.AB_INIT = function(){
+  var $ = function(id){ return document.getElementById(id); };
+  function stanceCls(s){ s=(s||"").toLowerCase();
+    return s.indexOf("bull")>-1 ? "bull" : (s.indexOf("bear")>-1 ? "bear" : "neut"); }
+  function stanceTh(s){ s=(s||"").toLowerCase();
+    return s.indexOf("bull")>-1 ? "ขาขึ้น" : (s.indexOf("bear")>-1 ? "ขาลง" : "เป็นกลาง"); }
+  function refresh(){
+    AB.getB("/api/meetings").then(function(d){
+      var ms = (d && d.meetings) || [];
+      if(!ms.length){ $("mtl").innerHTML = '<div class="loading">ยังไม่มีบันทึกการประชุม</div>'; AB.live(!!d); return; }
+      $("mtl").innerHTML = ms.slice(0,12).map(function(m){
+        var ops = (m.opinions||[]).map(function(o){
+          var full = AB.esc(o.opinion||"");
+          return '<div class="b" style="margin-top:8px"><span class="stance '+stanceCls(o.stance)+'">'+
+            stanceTh(o.stance)+' · '+(o.confidence!=null?o.confidence+"%":"")+'</span>'+full+'</div>';
+        }).join("");
+        return '<div class="ev"><div class="d">'+AB.esc(m.time_utc||"")+' UTC · ราคา '+
+          (m.price_at_meeting!=null? Number(m.price_at_meeting).toLocaleString("en-US",{minimumFractionDigits:2}) : "—")+'</div>'+
+          '<div class="b"><b>เหตุที่เรียกประชุม:</b> '+AB.esc(m.trigger_reason||"—")+'</div>'+ ops +'</div>';
+      }).join("");
+      AB.live(true);
+    });
+  }
+  AB.every(refresh);
+};
+</script>
+<script src="/assets/shell.js"></script>
+</body>
+</html>

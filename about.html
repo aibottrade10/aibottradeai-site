@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สรุปโปรเจกต์ — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="สรุปโปรเจกต์ AiBotTrade — ระบบบอทเทรดอัตโนมัติหลายตัว พร้อมวงจรเรียนรู้–ตรวจสอบตัวเอง บนบัญชีเดโม่ MT5 ต้นทุน $0/เดือน">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css">
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">10</span><h1>สรุปโปรเจกต์</h1></div>
+    <p class="plede">ระบบบอทเทรดอัตโนมัติหลายตัว พร้อมวงจรเรียนรู้–ตรวจสอบตัวเอง บนบัญชีเดโม่ MT5 · ต้นทุน $0/เดือน · เดโม่เท่านั้นในเฟสปัจจุบัน ทุกการเปลี่ยนแปลงต้องมนุษย์อนุมัติ</p>
+
+    <div class="sec"><div class="st">กองทัพบอท</div>
+    <div class="cardgrid">
+      <div class="bc"><div class="nm"><span class="dot" style="background:var(--green)"></span>Classic</div><span class="chip">live_bot_10.py · ทองคำ</span><p style="font-size:12px;color:var(--muted)">หัวหน้าทีม 16 กลยุทธ์ ให้คะแนน 0–100 ทุก 30 วิ ผ่านด่านกรองหลายชั้น ออกไม้ด้วย TP บางส่วน + breakeven + trailing</p></div>
+      <div class="bc"><div class="nm"><span class="dot" style="background:var(--green)"></span>Cent</div><span class="chip">account_runner.py</span><p style="font-size:12px;color:var(--muted)">ฝาแฝดที่รับสัญญาณจากส่วนกลาง — เทียบผลกับ Classic และเป็นตัวทดลอง A/B ของ config ใหม่</p></div>
+      <div class="bc"><div class="nm"><span class="dot" style="background:var(--green)"></span>APEX</div><span class="chip">bot_apex.py · ทองคำ</span><p style="font-size:12px;color:var(--muted)">มือปืน 5 เครื่องยนต์: ORACLE อ่านภาพใหญ่ → SNIPER หา pattern → GUARDIAN คุมความเสี่ยงรายวัน → SCULPTOR ออกไม้เป็นเฟส → SAGE บันทึกเรียนรู้</p></div>
+      <div class="bc"><div class="nm"><span class="dot" style="background:var(--green)"></span>NEXUS</div><span class="chip">nexus_bot.py · ทองคำ</span><p style="font-size:12px;color:var(--muted)">สภา 13 เอเจนต์โหวตก่อนเทรดทุกครั้ง — quorum + confluence + ตรวจ manipulation + Kelly sizing เข้มที่สุดในระบบ</p></div>
+      <div class="bc"><div class="nm"><span class="dot" style="background:var(--green)"></span>Basket</div><span class="chip">bot_basket.py · ทอง + 6 forex</span><p style="font-size:12px;color:var(--muted)">นักล่าหลายคู่เงิน — confluence 14 กลยุทธ์ต่อสินทรัพย์ เปิดเป็นตะกร้า ปิดเมื่อกำไรรวมถึงเป้า มี correlation limit</p></div>
+      <div class="bc"><div class="nm"><span class="dot" style="background:var(--green)"></span>SevenElevenTrader</div><span class="chip">game_master.py · 7 คู่เงิน</span><p style="font-size:12px;color:var(--muted)">เกมเทรด RPG — คู่เงินเป็นตัวละครมี HP/EXP, กลยุทธ์เป็นอาวุธ, แพ้ 3 ติดโดนปลดอาวุธ — วินัยการเทรดในร่างเกม</p></div>
+    </div></div>
+
+    <div class="sec"><div class="st">วงจรเรียนรู้–ตรวจสอบตัวเอง</div>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><h4>บันทึกครบทุกเงื่อนไข</h4><p>ทุกไม้บันทึกคะแนน/session/regime/ATR/spread/slippage — ไม่ใช่แค่กำไรขาดทุน แต่รู้ว่าทำไม</p></div>
+      <div class="step"><span class="n">2</span><h4>วิเคราะห์รายคืนอัตโนมัติ</h4><p>Analyst → Optimizer → Tester → Deployer (dry-run) + Config Auditor</p></div>
+      <div class="step"><span class="n">3</span><h4>สนามซ้อมต่อเนื่อง</h4><p>ทุกบอทมี "แล็บ" ทดสอบไอเดียใหม่แบบกระดาษคู่ขนาน — พิสูจน์ตัวเองก่อนถึงจะได้เข้าโค้ดจริง</p></div>
+    </div></div>
+
+    <p class="disc">
+      AiBotTrade เป็นโปรเจกต์วิจัยและพัฒนาระบบเทรดอัตโนมัติ ทำงานบนบัญชีทดลอง (เดโม่) เท่านั้น
+      ข้อมูลบนเว็บนี้จัดทำเพื่อบันทึกกระบวนการพัฒนา ไม่ถือเป็นคำแนะนำการลงทุน การชักชวนให้ลงทุน
+      หรือการรับประกันผลตอบแทนใด ๆ ผลงานในอดีตไม่ได้รับประกันผลในอนาคต การเทรดสินทรัพย์มีความเสี่ยงสูง
+      และอาจสูญเสียเงินทั้งหมดได้ · &copy; 2026 AiBotTrade
+    </p>
+  </main>
+</div>
+<script src="/assets/shell.js"></script>
+</body>
+</html>

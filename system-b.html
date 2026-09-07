@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบ B — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="ระบบ B ของ AiBotTrade — 5 ทีม LLM (Gemini/Groq/OpenRouter/Mistral/Cohere) แข่งกันเทรดทองคำบนบัญชีเดโม่ ผลงานรายทีมแบบสด">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css">
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">03</span><h1>ระบบ B · 5 ทีม LLM</h1></div>
+    <p class="plede">แต่ละทีมมีหัวหน้าเป็นโมเดลภาษาต่างค่าย (Gemini · Groq · OpenRouter · Mistral · Cohere) มีธรรมนูญของตัวเอง ลูกทีม 6 ตำแหน่งให้ความเห็น ก่อนตัดสินใจเทรด — แชร์บัญชีเดโม่จริงบัญชีเดียว (596931)</p>
+
+    <div class="kpi">
+      <div class="k"><div class="l">บัญชีจริง (equity)</div><div class="n c" id="k-eq">—</div><div class="sub" id="k-eq-sub">baseline $20,000</div></div>
+      <div class="k"><div class="l">กำไร/ขาดทุนรวม</div><div class="n" id="k-net">—</div><div class="sub" id="k-net-sub">จาก baseline</div></div>
+      <div class="k"><div class="l">Win Rate รวม</div><div class="n" id="k-wr">—</div><div class="sub" id="k-wr-sub">ทุกทีม</div></div>
+      <div class="k"><div class="l">ไม้เปิดอยู่</div><div class="n" id="k-open">—</div><div class="sub">ทุกทีมรวมกัน</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="st">อันดับทีม (ตามผลตอบแทน)</div>
+      <div class="cardgrid" id="teams"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+
+    <div class="card" style="margin-top:22px"><h3>ไม้ที่เปิดอยู่ · รายทีม</h3>
+      <table><thead><tr><th>ทีม</th><th>สินทรัพย์</th><th>ทิศทาง</th><th style="text-align:right">ลอต</th><th style="text-align:right">กำไรลอย</th></tr></thead>
+      <tbody id="open"><tr><td colspan="5" class="loading">กำลังโหลด…</td></tr></tbody></table></div>
+  </main>
+</div>
+
+<script>
+window.AB_INIT = function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var NAME = { team_openrouter:"OpenRouter", team_gemini:"Gemini", team_groq:"Groq", team_mistral:"Mistral", team_cohere:"Cohere" };
+  function tn(id){ return NAME[id] || (id||"").replace("team_",""); }
+  function refresh(){
+    Promise.all([ AB.getB("/api/overview"), AB.getB("/api/leaderboard"), AB.getB("/api/open_trades") ])
+    .then(function(r){
+      var ov=r[0], lb=(r[1]&&r[1].leaderboard)||[], ot=(r[2]&&r[2].open_trades)||[];
+      if(ov && ov.real_account){
+        var ra=ov.real_account;
+        $("k-eq").textContent = ra.equity!=null ? "$"+Number(ra.equity).toLocaleString("en-US",{maximumFractionDigits:0}) : "—";
+        var net = ra.balance!=null ? ra.balance-(ra.baseline||0) : null;
+        var ne=$("k-net"); ne.textContent=AB.fmtUSD(net); ne.className="n "+AB.cls(net);
+        $("k-net-sub").textContent = ra.pnl_pct!=null ? (ra.pnl_pct>=0?"+":"")+ra.pnl_pct+"%" : "";
+        var wr = (ov.total_wins+ov.total_losses) ? ov.total_wins/(ov.total_wins+ov.total_losses)*100 : null;
+        var we=$("k-wr"); we.textContent=AB.pct(wr); we.className="n "+(wr!=null&&wr>=50?"g":"am");
+        $("k-wr-sub").textContent = ov.total_wins+"W / "+ov.total_losses+"L";
+        $("k-open").textContent = AB.fmtInt(ov.total_open);
+      }
+      $("teams").innerHTML = lb.length ? lb.map(function(t){
+        var pos = ((t.pnl_pct||0) >= 0);
+        return '<div class="bc"><div class="top"><div class="nm"><span class="chip">#'+t.rank+'</span>'+AB.esc(tn(t.team_id))+'</div>'+
+          '<span class="chip">'+ ("$"+Number(t.balance).toLocaleString("en-US",{maximumFractionDigits:0})) +'</span></div>'+
+          '<div class="big '+(pos?"g":"r")+'">'+(t.pnl_pct>=0?"+":"")+t.pnl_pct+'%</div>'+
+          '<div class="metrics"><span>เดือนนี้ <b>'+AB.fmtUSD(t.monthly_pnl_usd)+'</b></span><span>คืบหน้าเป้า <b>'+(t.progress_pct!=null?t.progress_pct+"%":"—")+'</b></span></div>'+
+        '</div>';
+      }).join("") : '<div class="loading">โหลดอันดับทีมไม่ได้</div>';
+
+      $("open").innerHTML = ot.length ? ot.map(function(x){
+        return '<tr><td><b>'+AB.esc(tn(x.team_id))+'</b></td><td>'+AB.esc(x.symbol||"")+'</td><td>'+
+          (x.direction==="buy"?"ซื้อ":"ขาย")+'</td><td class="v">'+(x.lot!=null?x.lot:"—")+
+          '</td><td class="v '+AB.cls(x.pnl_usd)+'">'+AB.fmtUSD(x.pnl_usd)+'</td></tr>';
+      }).join("") : '<tr><td colspan="5" class="loading">ไม่มีไม้เปิด</td></tr>';
+
+      AB.live(!!ov);
+    });
+  }
+  AB.every(refresh);
+};
+</script>
+<script src="/assets/shell.js"></script>
+</body>
+</html>

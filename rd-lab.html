@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R&D Lab — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="R&D Lab ของ AiBotTrade — Variant Lab ทดสอบไอเดียกลยุทธ์ใหม่แบบกระดาษคู่ขนาน + R&D Agent ค้นเทคนิคใหม่รายวัน ดูโรสเตอร์และสถิติรับ/ปฏิเสธ">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css">
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">06</span><h1>R&amp;D Lab</h1></div>
+    <p class="plede">ไอเดียกลยุทธ์ใหม่ทุกตัวต้องพิสูจน์ตัวเองใน "สนามซ้อม" แบบกระดาษ (paper) ก่อน — Variant Lab รันคู่ขนานทุกชั่วโมง, R&amp;D Agent ค้นเทคนิคใหม่ 9 ช่องทางรายวัน แล้วคัดเฉพาะที่เขียนเป็นกฎเชิงกลไกได้</p>
+
+    <div class="kpi">
+      <div class="k"><div class="l">ผู้เล่นในโรสเตอร์</div><div class="n c" id="k-active">—</div><div class="sub" id="k-active-sub">/ เพดาน</div></div>
+      <div class="k"><div class="l">มาจาก R&amp;D Agent</div><div class="n" id="k-rd">—</div><div class="sub">ตัวที่ยัง active</div></div>
+      <div class="k"><div class="l">ปลดระวางแล้ว</div><div class="n" id="k-ret">—</div><div class="sub">ผลไม่ผ่านเกณฑ์</div></div>
+      <div class="k"><div class="l">ไม้กระดาษสะสม</div><div class="n" id="k-closed">—</div><div class="sub">ทุกผู้เล่นรวมกัน</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="st">R&amp;D Agent — รับ/ปฏิเสธ ไอเดียรายวัน</div>
+      <div class="daybars" id="daybars"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="st">โรสเตอร์ผู้เล่น (เรียงตาม avg R มากไปน้อย)</div>
+      <div class="card"><table><thead><tr><th>ผู้เล่น</th><th>ตระกูล</th><th>ที่มา</th><th style="text-align:right">ไม้</th><th style="text-align:right">ชนะ%</th><th style="text-align:right">avg R</th></tr></thead>
+        <tbody id="roster"><tr><td colspan="6" class="loading">กำลังโหลด…</td></tr></tbody></table></div>
+    </div>
+
+    <div class="sec">
+      <div class="st">บันทึก R&amp;D Agent ล่าสุด</div>
+      <pre class="log" id="log">กำลังโหลด…</pre>
+    </div>
+  </main>
+</div>
+
+<script>
+window.AB_INIT = function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var SRC = { rd:"R&D Agent", base:"พื้นฐาน", boss:"เจ้านายเสนอ" };
+  function refresh(){
+    AB.getA("/api/rd_lab").then(function(d){
+      var v = d && d.scan && d.scan.variants;
+      var rd = d && d.scan && d.scan.rd_daily;
+      if(v){
+        $("k-active").textContent = AB.fmtInt(v.active_count);
+        $("k-active-sub").textContent = "/ "+(v.max_roster||"—");
+        $("k-rd").textContent = AB.fmtInt(v.rd_sourced_active);
+        $("k-ret").textContent = AB.fmtInt(v.retired_count);
+        $("k-closed").textContent = AB.fmtInt(v.total_closed);
+        var rows = (v.rows||[]);
+        $("roster").innerHTML = rows.length ? rows.map(function(x){
+          var rr = (x.r==null) ? "—" : (x.r>=0?"+":"")+Number(x.r).toFixed(2);
+          var rcls = x.r==null ? "" : (x.r>0?"g":(x.r<0?"r":""));
+          return '<tr><td><b>'+AB.esc(x.id)+'</b></td><td>'+AB.esc(x.family)+
+            '</td><td><span class="chip">'+AB.esc(SRC[x.src]||x.src)+'</span></td>'+
+            '<td class="v">'+AB.fmtInt(x.n)+'</td><td class="v">'+(x.wr==null?"—":Number(x.wr).toFixed(1)+"%")+
+            '</td><td class="v '+rcls+'">'+rr+'</td></tr>';
+        }).join("") : '<tr><td colspan="6" class="loading">—</td></tr>';
+      }
+      if(rd && rd.length){
+        var max = Math.max.apply(null, rd.map(function(x){ return x.evaluated||1; }));
+        $("daybars").innerHTML = rd.map(function(x){
+          var h = (x.evaluated||0)/max*100;
+          var acc = (x.accepted||0), rej=(x.rejected||0), t=acc+rej||1;
+          return '<div class="db"><div class="stack" style="height:'+Math.max(h,8)+'%">'+
+            '<span class="acc" style="height:'+(acc/t*100)+'%"></span>'+
+            '<span class="rej" style="height:'+(rej/t*100)+'%"></span></div>'+
+            '<div class="lab">'+AB.esc(x.date_thai)+'<br>'+acc+'รับ / '+rej+'ปฏิเสธ</div></div>';
+        }).join("");
+      } else { $("daybars").innerHTML = '<div class="loading">—</div>'; }
+
+      var log = (d && d.log_tail) || [];
+      $("log").textContent = log.length ? log.join("\n") : "—";
+      AB.live(!!v);
+    });
+  }
+  AB.every(refresh);
+};
+</script>
+<script src="/assets/shell.js"></script>
+</body>
+</html>

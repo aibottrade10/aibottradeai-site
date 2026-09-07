@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สถาปัตยกรรม — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="สถาปัตยกรรม AiBotTrade — ทุกการตัดสินใจตรวจสอบย้อนหลังได้ ไม่มีชิ้นส่วนที่พังแล้วเงียบ ต้นทุน $0/เดือน">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css">
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">09</span><h1>สถาปัตยกรรม</h1></div>
+    <p class="plede">ทุกการตัดสินใจออกแบบให้ตรวจสอบย้อนหลังได้ และไม่มีชิ้นส่วนไหนที่พังแล้วเงียบ</p>
+    <div class="tbl">
+      <div class="tr"><div class="tk">ต้นทุน $0</div><div class="tv"><b>MetaTrader 5 Python</b> + ไฟล์ JSON ในเครื่อง + Telegram (ฟรีทั้งหมด) — ไม่มี API เสียเงินเข้า loop เทรด</div></div>
+      <div class="tr"><div class="tk">Trade Journal กลาง</div><div class="tv">ทุกไม้จากทุกบอทบันทึกพร้อมเงื่อนไขตอนเข้าครบ: คะแนน, session, regime, ATR, spread, slippage — รู้ว่า "ทำไม" ไม่ใช่แค่กำไร/ขาดทุน</div></div>
+      <div class="tr"><div class="tk">พิสูจน์ก่อนเชื่อ</div><div class="tv">ทุกการแก้กลยุทธ์ผ่าน <b>bar-walk backtest กับแท่งเทียนจริง</b> ก่อนเสมอ · ไอเดียใหม่ทดสอบแบบกระดาษ (R&amp;D Lab) จนพิสูจน์ตัวเอง</div></div>
+      <div class="tr"><div class="tk">วิเคราะห์รายคืน</div><div class="tv">Analyst หา pattern → Optimizer เสนอปรับ → Tester ทดสอบย้อนหลัง → Deployer เขียน dry-run + Config Auditor ตรวจว่า config ที่ตั้งถูกใช้จริง</div></div>
+      <div class="tr"><div class="tk">เฝ้าตัวเอง</div><div class="tv">เอเจนต์หลายตัวรันเป็นรอบ — วิเคราะห์แพทเทิร์น / เฝ้า process·tick·SL-TP / แก้บั๊ก / เฝ้าทีม AI / ค้นเทคนิค / รีเฟรชความจำ + <b>dead-man's-switch</b> แจ้งเตือนได้แม้เอเจนต์ตายพร้อมกันหมด</div></div>
+      <div class="tr"><div class="tk">กันชนหลายชั้น</div><div class="tv">ก่อนไม้เปิดต้องผ่าน correlation cap · news blackout · RR gate เชิงคณิตศาสตร์ · WR throttle · safety-lock บังคับด้วย hook ระดับเครื่องมือ</div></div>
+      <div class="tr"><div class="tk">แบ็กอัพ</div><div class="tv">มิเรอร์ทั้งโปรเจกต์ + สแนปช็อตไฟล์สถานะรายวันไปไดรฟ์แยก · มีตัวเฝ้าความสดของแบ็กอัพเอง (แจ้งเตือนถ้าเกิน 48 ชม.)</div></div>
+      <div class="tr"><div class="tk">เข้าถึง</div><div class="tv">เว็บหลัก <b>aibottradeai.com</b> โฮสต์ Cloudflare Pages (static, auto-deploy) · แดชบอร์ดสด <b>app.aibottradeai.com</b> ผ่าน Cloudflare Tunnel — ไม่เปิดพอร์ตเครื่องออกเน็ต</div></div>
+    </div>
+    <a class="btn" href="https://app.aibottradeai.com/architecture" target="_blank" rel="noopener">ดูผังเต็มบนแดชบอร์ด ↗</a>
+  </main>
+</div>
+<script src="/assets/shell.js"></script>
+</body>
+</html>
