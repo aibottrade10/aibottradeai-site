@@ -1,34 +1,31 @@
 # ============================================================
-# app.aibottradeai.com — ingress rule สำหรับ tunnel เดิม
+# app.aibottradeai.com — DONE (2026-09-07)
 # ============================================================
-# ทำ *หลัง* จดโดเมน aibottradeai.com + เพิ่มเข้า Cloudflare แล้วเท่านั้น
-#
-# ไฟล์ config จริง: C:\Users\PH Ai Bot\.cloudflared\config.yml
-# tunnel id เดิม:   a8533e9e-cc36-40ae-acaa-4974a0e3f00d
-#
-# ------------------------------------------------------------
-# 1) เพิ่มบรรทัดนี้ใน config.yml — วางไว้ "ก่อน" บรรทัดสุดท้าย
-#    (- service: http_status:404)
-# ------------------------------------------------------------
-#
-#   - hostname: app.aibottradeai.com
-#     service: http://localhost:8769
-#
-#   (8769 = team_server.py — หน้า / = team_public, /status = รวม A+B+7-11)
+# โดเมน aibottradeai.com อยู่ Cloudflare account "Aibottrade10@gmail.com"
+# ซึ่ง *คนละ account* กับ tunnel หลัก (aibottrade) + thailandcopytrade.com
+# tunnel เดิมข้าม account ไปเสิร์ฟ hostname ของ aibottradeai.com ไม่ได้
+# => สร้าง tunnel ตัวที่ 2 แยกใน account ใหม่แทน
 #
 # ------------------------------------------------------------
-# 2) สร้าง DNS record ให้ tunnel (ทำ 1 ครั้ง) — เลือกอย่างใดอย่างหนึ่ง:
+# ที่ทำไปแล้ว (ไม่ต้องทำซ้ำ):
+#   tunnel:     aibottradeai-app
+#   id:         0e40a26c-82a5-4f72-91f8-7f9dab770d85
+#   cert/creds: C:\Users\PH Ai Bot\.cloudflared-app\  (แยกจาก .cloudflared เดิม)
+#   config:     C:\Users\PH Ai Bot\.cloudflared-app\config.yml
+#                 ingress: app.aibottradeai.com -> http://localhost:8769
+#   DNS:        CNAME app -> 0e40a26c-...cfargotunnel.com (proxied)
+#   watchdog:   C:\Users\PH Ai Bot\.cloudflared-app\cloudflared_app_watchdog.py
+#   task:       AITrading_CloudflaredTunnelApp  (ทุก 5 นาที, mirror ของ AITrading_CloudflaredTunnel)
 #
-#    ก. คำสั่ง (จากโฟลเดอร์ tools/):
-#       cloudflared.exe tunnel route dns a8533e9e-cc36-40ae-acaa-4974a0e3f00d app.aibottradeai.com
-#
-#    ข. หรือใน Cloudflare DNS ของ aibottradeai.com เพิ่มเอง:
-#       Type=CNAME  Name=app  Target=a8533e9e-cc36-40ae-acaa-4974a0e3f00d.cfargotunnel.com  Proxied=ON
+# เช็ค: https://app.aibottradeai.com  -> team dashboard (เหมือน aibottrade.thailandcopytrade.com)
+#       https://app.aibottradeai.com/status -> หน้ารวม A + B + 7-11
 #
 # ------------------------------------------------------------
-# 3) restart tunnel:
-#    PowerShell:  Restart-ScheduledTask -TaskName "AITrading_CloudflaredTunnel"
-#    (หรือรอ watchdog รอบ 5 นาที กู้ให้เอง)
-# ------------------------------------------------------------
-#
-# เช็ค: เปิด https://app.aibottradeai.com ต้องได้หน้า team dashboard
+# ถ้า tunnel ตัวที่ 2 ตายและ watchdog ไม่กู้:
+#   Start-ScheduledTask -TaskName "AITrading_CloudflaredTunnelApp"
+# หรือรันมือ:
+#   & "D:\Claude Code\Project Ai Bot Trade\xauusd_ob_bot\tools\cloudflared.exe" `
+#     --origincert "C:\Users\PH Ai Bot\.cloudflared-app\cert.pem" `
+#     --config "C:\Users\PH Ai Bot\.cloudflared-app\config.yml" `
+#     tunnel run aibottradeai-app
+# ============================================================

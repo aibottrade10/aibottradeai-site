@@ -46,20 +46,21 @@
 
 ---
 
-## ขั้นที่ 4 — ผูกโดเมน
-1. หน้า Pages project `aibottradeai` → **Custom domains → Set up a custom domain**
-2. ใส่ `aibottradeai.com` → Continue (Cloudflare เพิ่ม DNS record ให้เอง) → รอ ~1–5 นาที Active
-3. ทำซ้ำอีกครั้งกับ `www.aibottradeai.com`
+## ขั้นที่ 4 — ผูกโดเมน  ✅ เสร็จแล้ว (2026-09-07)
+- Pages project `aibottradeai-site` → Custom domains
+- `aibottradeai.com` = **Active + SSL**, `www.aibottradeai.com` = **Active**
 
 ---
 
-## ขั้นที่ 5 — `app.aibottradeai.com` (แดชบอร์ดสด ผ่าน tunnel เดิม)
-- Claude แก้ `cloudflared` config + สร้าง DNS record ให้ (ดู `cloudflared-app-aibottradeai.yaml` ในโฟลเดอร์นี้)
-- เจ้านายแค่ **restart tunnel** (`Restart-ScheduledTask -TaskName "AITrading_CloudflaredTunnel"` หรือรอรอบ watchdog 5 นาที)
+## ขั้นที่ 5 — `app.aibottradeai.com` (แดชบอร์ดสด)  ✅ เสร็จแล้ว (2026-09-07)
+โดเมน aibottradeai.com อยู่คนละ Cloudflare account กับ tunnel หลัก จึงสร้าง **tunnel ตัวที่ 2**
+(`aibottradeai-app`) ใน account ใหม่ ชี้ไป `localhost:8769` — รายละเอียด/วิธีกู้อยู่ใน
+`cloudflared-app-aibottradeai.yaml` · watchdog: task `AITrading_CloudflaredTunnelApp` (ทุก 5 นาที)
 
 ---
 
-## เสร็จแล้ว
-- `aibottradeai.com` → เว็บหลัก (แก้ผ่าน Claude + git push → live ~30 วิ ถ้าใช้ทาง A)
-- `app.aibottradeai.com` → แดชบอร์ดสด
-- ต้นทุน: ~490 บาท/ปี (ค่าโดเมน) · โฮสต์ 0 บาท
+## เสร็จแล้วทั้งหมด
+- `aibottradeai.com` / `www` → เว็บหลัก (แก้ผ่าน Claude + `git push` → Cloudflare Pages auto-deploy ~30 วิ)
+- `app.aibottradeai.com` → แดชบอร์ดสด (team dashboard + `/status` = รวม A+B+7-11)
+- GitHub: `aibottrade10/aibottradeai-site` (public) · โฟลเดอร์เครื่อง: `D:\Claude Code\goldpilot-site\`
+- ต้นทุน: ~365 บาท/ปี (ค่าโดเมน) · โฮสต์ + tunnel = 0 บาท
