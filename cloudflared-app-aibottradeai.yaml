@@ -12,8 +12,14 @@
 #   id:         0e40a26c-82a5-4f72-91f8-7f9dab770d85
 #   cert/creds: C:\Users\PH Ai Bot\.cloudflared-app\  (แยกจาก .cloudflared เดิม)
 #   config:     C:\Users\PH Ai Bot\.cloudflared-app\config.yml
-#                 ingress: app.aibottradeai.com -> http://localhost:8769
-#   DNS:        CNAME app -> 0e40a26c-...cfargotunnel.com (proxied)
+#                 ingress (ย้ายจาก thailandcopytrade.com คู่ขนาน 2026-09-07):
+#                   app.aibottradeai.com     -> http://localhost:8769  (team dashboard + /status)
+#                   aiteams.aibottradeai.com -> http://localhost:8770  (System B)
+#                   nicha.aibottradeai.com   -> http://localhost:8890  (JarvisNicha HUD)
+#                   tesla.aibottradeai.com   -> http://localhost:8771  (Tesla monitor)
+#                   aibot.aibottradeai.com   -> http://localhost:8768  (public / customer page)
+#   DNS:        CNAME app/aiteams/nicha/tesla/aibot -> 0e40a26c-...cfargotunnel.com (proxied)
+#               (สร้างในแดชบอร์ด — `cloudflared tunnel route dns` เจอ "Tunnel not found" กับ CLI นี้)
 #   watchdog:   C:\Users\PH Ai Bot\.cloudflared-app\cloudflared_app_watchdog.py
 #   task:       AITrading_CloudflaredTunnelApp  (ทุก 5 นาที, mirror ของ AITrading_CloudflaredTunnel)
 #
