@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoldPilot — ระบบเทรดทองคำอัตโนมัติด้วย AI</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="GoldPilot — ระบบเทรด XAUUSD อัตโนมัติที่ขับเคลื่อนด้วยทีม AI หลายตัว บนสถาปัตยกรรมต้นทุน $0/เดือน">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#0a0e17; --panel:#0f1420; --panel-2:#131a29; --line:#1c2436; --line-2:#28324a;
+    --ink:#e8ecf4; --muted:#8b95ac; --faint:#5a6480;
+    --blue:#4a9eff; --blue-dim:#2f6fbf; --blue-soft:#4a9eff14;
+    --green:#3ecf8e; --amber:#e8b04b; --red:#e8695f;
+    --sans:"IBM Plex Sans Thai","Segoe UI",-apple-system,sans-serif;
+    --mono:"IBM Plex Mono",Consolas,monospace;
+    --sb:248px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .mono{font-family:var(--mono)}
+
+  /* ---------- layout ---------- */
+  .app{display:grid;grid-template-columns:var(--sb) 1fr;min-height:100vh}
+  @media(max-width:960px){.app{grid-template-columns:1fr}}
+
+  /* ---------- sidebar ---------- */
+  aside{border-right:1px solid var(--line);background:var(--panel);position:sticky;top:0;height:100vh;
+    display:flex;flex-direction:column;padding:20px 16px}
+  @media(max-width:960px){aside{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}}
+  .logo{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
+  .logo .mk{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:14px;
+    color:#08101c;background:linear-gradient(135deg,var(--amber),#c98f3c)}
+  .logo b{font-weight:600;font-size:16px}
+  .logo span{display:block;font-size:11px;color:var(--faint);font-family:var(--mono)}
+  .sb-grp{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:14px 10px 6px}
+  nav a{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;font-size:13.5px;color:var(--muted);transition:.15s}
+  nav a:hover{background:var(--panel-2);color:var(--ink)}
+  nav a.on{background:var(--blue-soft);color:var(--blue)}
+  nav a svg{width:16px;height:16px;flex:none;stroke:currentColor;stroke-width:1.7;fill:none}
+  .sb-foot{margin-top:auto;padding-top:16px}
+  .sb-foot .live{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--line-2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--green)}
+  .sb-foot .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .sb-foot small{display:block;color:var(--faint);font-size:10.5px;margin-top:10px;line-height:1.5}
+
+  /* ---------- main ---------- */
+  main{padding:34px clamp(20px,4vw,52px) 72px;max-width:1080px}
+  .pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+    padding:5px 11px;border-radius:20px;background:#3ecf8e18;color:var(--green);border:1px solid #3ecf8e33}
+  .pill i{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  h1{font-size:clamp(28px,4.6vw,44px);font-weight:600;line-height:1.14;margin:16px 0 14px;letter-spacing:-.01em;max-width:20ch}
+  h1 em{font-style:normal;color:var(--amber)}
+  .lede{color:var(--muted);max-width:62ch;font-size:15.5px}
+  .actions{display:flex;gap:11px;flex-wrap:wrap;margin-top:24px}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;padding:11px 18px;border-radius:9px;border:1px solid var(--line-2);transition:.15s}
+  .btn.pri{background:var(--blue);border-color:var(--blue);color:#04121f;font-weight:600}
+  .btn.pri:hover{background:#63aaff}
+  .btn.gh:hover{border-color:var(--blue);color:var(--blue)}
+
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px}
+  @media(max-width:720px){.stat-row{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:16px 16px 14px}
+  .stat .n{font-family:var(--mono);font-size:22px;color:var(--amber)}
+  .stat .l{font-size:11.5px;color:var(--muted);margin-top:5px}
+
+  .callout{margin-top:20px;background:var(--blue-soft);border:1px solid #4a9eff2e;border-left:3px solid var(--blue);
+    border-radius:10px;padding:16px 18px;font-size:13.5px;color:var(--muted)}
+  .callout b{color:var(--ink);font-weight:600}
+  .callout .hd{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--blue);margin-bottom:6px}
+
+  section{margin-top:52px}
+  .s-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .s-head .no{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  h2{font-size:clamp(19px,3vw,25px);font-weight:600;letter-spacing:-.01em}
+  .s-lede{color:var(--muted);font-size:14px;max-width:60ch;margin-bottom:20px}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--blue);
+    background:var(--blue-soft);border:1px solid #4a9eff2e;padding:3px 9px;border-radius:16px}
+  .card h3{font-size:16.5px;font-weight:600;margin:13px 0 8px}
+  .card p{font-size:13.5px;color:var(--muted)}
+  .card .meta{margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+
+  .tbl{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .tr{display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid var(--line)}
+  .tr:last-child{border-bottom:none}
+  .tk{padding:16px 16px;border-right:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--amber);background:var(--panel-2)}
+  .tv{padding:16px 18px;font-size:14px;color:var(--muted)}
+  .tv b{color:var(--ink)}
+  @media(max-width:600px){.tr{grid-template-columns:1fr}.tk{border-right:none;border-bottom:1px solid var(--line)}}
+
+  .ags{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.ags{grid-template-columns:1fr}}
+  .ag{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px}
+  .ag .w{font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:.05em}
+  .ag h3{font-size:15px;font-weight:600;margin:6px 0 8px}
+  .ag p{font-size:13px;color:var(--muted)}
+
+  .log{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);font-size:13.5px}
+  .li{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line)}
+  .li:last-child{border-bottom:none}
+  .li .d{font-family:var(--mono);font-size:11.5px;color:var(--amber)}
+  .li .t{color:var(--muted)}.li .t b{color:var(--ink)}
+
+  .cta{margin-top:52px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:36px 28px;text-align:center}
+  .cta h2{margin-bottom:8px}
+  .cta p{color:var(--muted);max-width:48ch;margin:0 auto 20px;font-size:14px}
+
+  .disc{margin-top:44px;font-size:11.5px;color:var(--faint);line-height:1.8;max-width:84ch}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside>
+    <div class="logo">
+      <span class="mk">G</span>
+      <span><b>GoldPilot</b><span>trading system</span></span>
+    </div>
+
+    <div class="sb-grp">ภาพรวม</div>
+    <nav>
+      <a href="#top" class="on">
+        <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10"/></svg>หน้าหลัก</a>
+      <a href="#systems">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>3 ระบบ</a>
+      <a href="#how">
+        <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/></svg>หลักการ</a>
+      <a href="#agents">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>ทีม AI</a>
+      <a href="#log">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>บันทึกพัฒนา</a>
+    </nav>
+
+    <div class="sb-grp">ลิงก์</div>
+    <nav>
+      <a href="https://app.goldpilot.app" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg>แดชบอร์ดสด</a>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="live">LIVE<span class="mono">·auto</span></div>
+      <small>โปรเจกต์วิจัย/พัฒนา · บัญชีเดโม่<br>ไม่ใช่คำแนะนำการลงทุน</small>
+    </div>
+  </aside>
+
+  <main id="top">
+    <span class="pill"><i></i>สถานะระบบ: ปกติ</span>
+    <h1>ระบบเทรดทองคำที่ <em>ทีม&nbsp;AI</em> ดูแลกันเอง</h1>
+    <p class="lede">GoldPilot เทรด XAUUSD อัตโนมัติด้วยกลยุทธ์หลายชั้นและทีม LLM ที่แข่งกันตัดสินใจ —
+      รันบนสถาปัตยกรรมต้นทุน <b style="color:var(--amber)">$0/เดือน</b> พร้อมเอเจนต์เฝ้าระบบทำงานเองตลอด 24 ชั่วโมง</p>
+    <div class="actions">
+      <a class="btn pri" href="https://app.goldpilot.app" target="_blank" rel="noopener">เปิดแดชบอร์ด ↗</a>
+      <a class="btn gh" href="#how">อ่านสถาปัตยกรรม</a>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="n">3</div><div class="l">ระบบเทรดทำงานคู่กัน</div></div>
+      <div class="stat"><div class="n">5</div><div class="l">ทีม LLM แข่งตัดสินใจ</div></div>
+      <div class="stat"><div class="n">7</div><div class="l">เอเจนต์เฝ้าระบบอัตโนมัติ</div></div>
+      <div class="stat"><div class="n">$0</div><div class="l">ค่าใช้จ่ายต่อเดือน</div></div>
+    </div>
+
+    <div class="callout">
+      <div class="hd">สรุปโดยระบบ</div>
+      journal <b>1,470</b> ไม้ · WR <b>53.4%</b> — ทุก process ปกติ · ไม้เปิดมี SL/TP ครบ ·
+      5 ทีม AI รันครบ fallback chain ทำงาน critic ให้ verdict จริง · เอเจนต์ทั้ง 7 armed · แบ็กอัพ fresh
+    </div>
+
+    <section id="systems">
+      <div class="s-head"><span class="no">01</span><h2>เทรดหลายมุมมองพร้อมกัน</h2></div>
+      <p class="s-lede">แต่ละระบบมีวิธีคิดคนละแบบและรันแยกอิสระ — กระจายความเสี่ยงของ "วิธีการ" ไม่ใช่แค่กระจายไม้</p>
+      <div class="cards">
+        <div class="card">
+          <span class="tag">SYSTEM A</span>
+          <h3>กลยุทธ์หลายชั้น</h3>
+          <p>บอทหลายตัวบนบัญชีเดียว รันกลยุทธ์เชิงกลไกกว่า 30 แบบ (EMA · Order Block · Liquidity Sweep · Fibonacci)</p>
+          <div class="meta">guards: correlation_cap · news_filter · equity_curve</div>
+        </div>
+        <div class="card">
+          <span class="tag">SYSTEM B</span>
+          <h3>5 ทีม AI แข่งกัน</h3>
+          <p>ทีม LLM 5 ทีม (Gemini · Groq · OpenRouter · Mistral · Cohere) มีธรรมนูญของตัวเอง ลูกทีม 6 ตำแหน่งให้ความเห็น</p>
+          <div class="meta">gates: critic → RR_gate → WR_throttle</div>
+        </div>
+        <div class="card">
+          <span class="tag">SEVEN-ELEVEN</span>
+          <h3>ชั้นเกม RPG</h3>
+          <p>ห่อกลยุทธ์เป็น "อาวุธ" ในเกม — แต่ละคู่เงินคือด่าน มี HP/EXP/แรงค์ และห้องแล็บทดสอบอาวุธใหม่แบบกระดาษ</p>
+          <div class="meta">weapons: SWORD · SPEAR · RUNE · BOW · CHARGE</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="s-head"><span class="no">02</span><h2>เบา โปร่งใส ดูแลตัวเองได้</h2></div>
+      <p class="s-lede">ทุกการตัดสินใจออกแบบให้ตรวจสอบย้อนหลังได้ และไม่มีชิ้นส่วนไหนที่พังแล้วเงียบ</p>
+      <div class="tbl">
+        <div class="tr"><div class="tk">ต้นทุน $0</div><div class="tv"><b>MetaTrader 5 Python</b> + ไฟล์ JSON ในเครื่อง + Telegram (ฟรีทั้งหมด) — ไม่มีการเรียก API เสียเงินเข้า loop เทรด</div></div>
+        <div class="tr"><div class="tk">พิสูจน์ก่อนเชื่อ</div><div class="tv">ทุกการแก้กลยุทธ์ผ่าน <b>bar-walk backtest กับแท่งเทียนจริง</b> ก่อนเสมอ · ไอเดียใหม่ทดสอบแบบกระดาษจนพิสูจน์ตัวเอง</div></div>
+        <div class="tr"><div class="tk">เฝ้าตัวเอง</div><div class="tv">เอเจนต์ 7 ตัวรันเป็นรอบ · วิเคราะห์แพทเทิร์น / เฝ้า process·tick·SL-TP / แก้บั๊ก / เฝ้าทีม AI / ค้นเทคนิค / รีเฟรชความจำ / คัดกรองไอเดีย + <b>dead-man's-switch</b></div></div>
+        <div class="tr"><div class="tk">กันชนหลายชั้น</div><div class="tv">ก่อนไม้เปิดต้องผ่าน correlation cap · news blackout · RR gate ทางคณิตศาสตร์ · WR throttle · safety-lock บังคับด้วย hook ระดับเครื่องมือ</div></div>
+        <div class="tr"><div class="tk">แบ็กอัพ</div><div class="tv">มิเรอร์ทั้งโปรเจกต์ + สแนปช็อตไฟล์สถานะรายวันไปไดรฟ์แยก · มีตัวเฝ้าความสดของแบ็กอัพเอง (แจ้งเตือนถ้าเกิน 48 ชม.)</div></div>
+      </div>
+    </section>
+
+    <section id="agents">
+      <div class="s-head"><span class="no">03</span><h2>7 ตัวที่ไม่ต้องสั่ง</h2></div>
+      <p class="s-lede">ทำงานเป็นรอบตามตารางของตัวเอง เขียนบันทึกทุกครั้งแม้ผลจะเป็น "ไม่มีอะไรเปลี่ยน"</p>
+      <div class="ags">
+        <div class="ag"><span class="w">ทุก 2 ชม.</span><h3>AI Brain</h3><p>อ่าน journal หาแพทเทิร์นที่คนตรวจงานจะสะดุด — small-sample ผิดปกติ, win/loss cluster, บั๊กที่ข้อมูลชี้</p></div>
+        <div class="ag"><span class="w">ทุก 30 นาที</span><h3>Process Guardian</h3><p>เช็ก process ครบไหม · tick สดไหม · ไม้เปิดมี SL/TP ครบไหม — กู้อัตโนมัติถ้าอะไรตาย</p></div>
+        <div class="ag"><span class="w">ทุก 6 ชม.</span><h3>Bug Fixer</h3><p>อ่าน flag จาก AI Brain + รายงาน audit แล้วแก้บั๊กจริงเอง (แก้ + ทดสอบ + รายงาน)</p></div>
+        <div class="ag"><span class="w">ทุก 2 ชม.</span><h3>System B Watcher</h3><p>เฝ้า 5 ทีม LLM — quota/fallback chain ทำงานไหม มีทีมติด HOLD เพราะ API พังหรือเปล่า</p></div>
+        <div class="ag"><span class="w">รายวัน</span><h3>R&amp;D Agent</h3><p>ค้นเทคนิคใหม่ 9 ช่องทาง + คิดสมมติฐานเอง — คัดเฉพาะที่เขียนเป็นกฎเชิงกลไกได้ ทดสอบแบบกระดาษ</p></div>
+        <div class="ag"><span class="w">รายวัน</span><h3>Memory Vault + Idea Triage</h3><p>รีเฟรชคลังความจำโปรเจกต์ · ให้คะแนนไอเดียดิบที่ส่งเข้ามาทาง Telegram</p></div>
+      </div>
+    </section>
+
+    <section id="log">
+      <div class="s-head"><span class="no">04</span><h2>สร้างทีละวัน</h2></div>
+      <p class="s-lede">ตัวอย่างสิ่งที่ทำ/แก้ล่าสุด — ฉบับเต็มอยู่ในคลังความจำของโปรเจกต์</p>
+      <div class="log">
+        <div class="li"><span class="d">ก.ย. 2026</span><span class="t"><b>ทำเว็บ GoldPilot</b> แยกออกมาบนโดเมนของตัวเอง (หน้านี้)</span></div>
+        <div class="li"><span class="d">ก.ย. 2026</span><span class="t"><b>เสริม fallback chain ของทีม AI</b> — ทุก provider มีชั้นสำรอง Ollama local ให้ critic ได้ verdict จริง</span></div>
+        <div class="li"><span class="d">ก.ย. 2026</span><span class="t"><b>ระบบเฝ้าแบ็กอัพ</b> — แจ้งเตือนถ้าแบ็กอัพรายวันล้มเกิน 48 ชม.</span></div>
+        <div class="li"><span class="d">ก.ย. 2026</span><span class="t"><b>PreToolUse hook</b> บังคับกฎความปลอดภัยระดับเครื่องมือ ไม่พึ่งความจำอย่างเดียว</span></div>
+        <div class="li"><span class="d">ส.ค. 2026</span><span class="t"><b>dead-man's-switch</b> จริงตัวแรก — แจ้งเตือนได้แม้เอเจนต์ตายพร้อมกันหมด</span></div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <span class="pill" style="background:#4a9eff18;color:var(--blue);border-color:#4a9eff33"><i style="background:var(--blue)"></i>สถานะสด</span>
+      <h2 style="margin-top:12px">ดูตัวเลขจริงตอนนี้</h2>
+      <p>แดชบอร์ดรวม 3 ระบบ อัปเดตอัตโนมัติ — balance/equity, อัตราชนะ, ไม้ที่เปิดอยู่</p>
+      <a class="btn pri" href="https://app.goldpilot.app" target="_blank" rel="noopener">เปิดแดชบอร์ด ↗</a>
+    </div>
+
+    <p class="disc">
+      GoldPilot เป็นโปรเจกต์วิจัยและพัฒนาระบบเทรดอัตโนมัติ ทำงานบนบัญชีทดลอง (เดโม่) เท่านั้น
+      ข้อมูลบนเว็บนี้จัดทำเพื่อบันทึกกระบวนการพัฒนา ไม่ถือเป็นคำแนะนำการลงทุน การชักชวนให้ลงทุน
+      หรือการรับประกันผลตอบแทนใด ๆ การเทรดสินทรัพย์มีความเสี่ยงสูงและอาจสูญเสียเงินทั้งหมดได้ ·
+      &copy; 2026 GoldPilot
+    </p>
+  </main>
+
+</div>
+</body>
+</html>
