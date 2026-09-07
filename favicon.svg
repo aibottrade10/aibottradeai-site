@@ -5,5 +5,5 @@
   <rect width="32" height="32" rx="7" fill="#0a0e17"/>
   <rect x="4.5" y="4.5" width="23" height="23" rx="5" fill="none" stroke="url(#g)" stroke-width="1.6"/>
   <text x="16" y="22" font-family="IBM Plex Mono, Consolas, monospace" font-size="15" font-weight="600"
-        text-anchor="middle" fill="url(#g)">G</text>
+        text-anchor="middle" fill="url(#g)">A</text>
 </svg>

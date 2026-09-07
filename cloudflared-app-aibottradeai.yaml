@@ -1,7 +1,7 @@
 # ============================================================
-# app.goldpilot.app — ingress rule สำหรับ tunnel เดิม
+# app.aibottradeai.com — ingress rule สำหรับ tunnel เดิม
 # ============================================================
-# ทำ *หลัง* จดโดเมน goldpilot.app + เพิ่มเข้า Cloudflare แล้วเท่านั้น
+# ทำ *หลัง* จดโดเมน aibottradeai.com + เพิ่มเข้า Cloudflare แล้วเท่านั้น
 #
 # ไฟล์ config จริง: C:\Users\PH Ai Bot\.cloudflared\config.yml
 # tunnel id เดิม:   a8533e9e-cc36-40ae-acaa-4974a0e3f00d
@@ -11,7 +11,7 @@
 #    (- service: http_status:404)
 # ------------------------------------------------------------
 #
-#   - hostname: app.goldpilot.app
+#   - hostname: app.aibottradeai.com
 #     service: http://localhost:8769
 #
 #   (8769 = team_server.py — หน้า / = team_public, /status = รวม A+B+7-11)
@@ -20,9 +20,9 @@
 # 2) สร้าง DNS record ให้ tunnel (ทำ 1 ครั้ง) — เลือกอย่างใดอย่างหนึ่ง:
 #
 #    ก. คำสั่ง (จากโฟลเดอร์ tools/):
-#       cloudflared.exe tunnel route dns a8533e9e-cc36-40ae-acaa-4974a0e3f00d app.goldpilot.app
+#       cloudflared.exe tunnel route dns a8533e9e-cc36-40ae-acaa-4974a0e3f00d app.aibottradeai.com
 #
-#    ข. หรือใน Cloudflare DNS ของ goldpilot.app เพิ่มเอง:
+#    ข. หรือใน Cloudflare DNS ของ aibottradeai.com เพิ่มเอง:
 #       Type=CNAME  Name=app  Target=a8533e9e-cc36-40ae-acaa-4974a0e3f00d.cfargotunnel.com  Proxied=ON
 #
 # ------------------------------------------------------------
@@ -31,4 +31,4 @@
 #    (หรือรอ watchdog รอบ 5 นาที กู้ให้เอง)
 # ------------------------------------------------------------
 #
-# เช็ค: เปิด https://app.goldpilot.app ต้องได้หน้า team dashboard
+# เช็ค: เปิด https://app.aibottradeai.com ต้องได้หน้า team dashboard
