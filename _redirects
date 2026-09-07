@@ -1,2 +1,4 @@
-# www -> apex (Cloudflare Pages handles both; this is a safety net)
-https://www.aibottradeai.com/*  https://aibottradeai.com/:splat  301
+# Cloudflare Pages serves both aibottradeai.com and www.aibottradeai.com.
+# A www -> apex canonical redirect (if wanted) is better done as a
+# Cloudflare Redirect Rule on the zone than here, because _redirects
+# applies to every hostname and only accepts relative paths.
