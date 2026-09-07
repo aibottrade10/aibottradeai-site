@@ -69,7 +69,32 @@
       if(ok){ b.className="livebar"; tx.textContent="LIVE · อัปเดตทุก 60 วิ"; }
       else  { b.className="livebar off"; tx.textContent="เชื่อมต่อไม่ได้บางส่วน"; }
     },
-    every:function(fn){ fn(); setInterval(fn, 60000); }
+    every:function(fn){ fn(); setInterval(fn, 60000); },
+    // เส้นกราฟ SVG แบบ inline (ไม่พึ่งไลบรารีนอก) — points = อาเรย์ตัวเลข
+    spark:function(points, opt){
+      opt = opt || {};
+      var w = opt.w || 640, h = opt.h || 150, pad = 6;
+      var pts = (points||[]).filter(function(x){ return typeof x==="number"; });
+      if(pts.length < 2) return '<div class="loading">ยังไม่มีข้อมูลพอวาดกราฟ</div>';
+      var mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts);
+      var rng = (mx - mn) || 1;
+      var sx = (w - pad*2) / (pts.length - 1);
+      var xy = function(v,i){ return [ (pad + i*sx).toFixed(1),
+        (h - pad - (v - mn)/rng*(h - pad*2)).toFixed(1) ]; };
+      var d = pts.map(function(v,i){ var p=xy(v,i); return (i? "L":"M")+p[0]+" "+p[1]; }).join(" ");
+      var last = pts[pts.length-1];
+      var up = last >= (pts[0]||0);
+      var col = up ? "var(--green)" : "var(--red)";
+      var area = d + " L " + (pad + (pts.length-1)*sx).toFixed(1) + " " + (h-pad) + " L " + pad + " " + (h-pad) + " Z";
+      // เส้นศูนย์ (ถ้าช่วงคร่อม 0)
+      var zero = "";
+      if(mn < 0 && mx > 0){ var zy=(h - pad - (0 - mn)/rng*(h - pad*2)).toFixed(1);
+        zero = '<line x1="'+pad+'" y1="'+zy+'" x2="'+(w-pad)+'" y2="'+zy+'" stroke="var(--line-2)" stroke-dasharray="3 4"/>'; }
+      return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:100%;height:'+h+'px;display:block">'+
+        '<path d="'+area+'" fill="'+col+'" opacity="0.09"/>'+ zero +
+        '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="1.6" stroke-linejoin="round"/>'+
+        '</svg>';
+    }
   };
   window.AB = AB;
 

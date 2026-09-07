@@ -25,6 +25,11 @@
       <div class="k"><div class="l">ไม้เปิดอยู่</div><div class="n" id="k-open">—</div><div class="sub">ทุกทีมรวมกัน</div></div>
     </div>
 
+    <div class="chartcard" style="margin-top:20px">
+      <div class="ct"><h3>เส้นกำไรสะสม · System B (ทุกทีมรวมกัน)</h3><span class="val" id="eq-val">—</span></div>
+      <div id="eq-chart"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+
     <div class="sec">
       <div class="st">อันดับทีม (ตามผลตอบแทน)</div>
       <div class="cardgrid" id="teams"><div class="loading">กำลังโหลด…</div></div>
@@ -42,9 +47,17 @@ window.AB_INIT = function(){
   var NAME = { team_openrouter:"OpenRouter", team_gemini:"Gemini", team_groq:"Groq", team_mistral:"Mistral", team_cohere:"Cohere" };
   function tn(id){ return NAME[id] || (id||"").replace("team_",""); }
   function refresh(){
-    Promise.all([ AB.getB("/api/overview"), AB.getB("/api/leaderboard"), AB.getB("/api/open_trades") ])
+    Promise.all([ AB.getB("/api/overview"), AB.getB("/api/leaderboard"), AB.getB("/api/open_trades"), AB.getB("/api/closed_trades") ])
     .then(function(r){
       var ov=r[0], lb=(r[1]&&r[1].leaderboard)||[], ot=(r[2]&&r[2].open_trades)||[];
+
+      var ct = (r[3] && r[3].closed_trades) || [];
+      if(ct.length){
+        ct.sort(function(a,b){ return (a.closed_utc||"") < (b.closed_utc||"") ? -1 : 1; });
+        var run=0, curve=ct.map(function(x){ run += (typeof x.pnl_usd==="number"?x.pnl_usd:0); return run; });
+        $("eq-chart").innerHTML = AB.spark(curve, {h:160});
+        var last=curve[curve.length-1]; var v=$("eq-val"); v.textContent=AB.fmtUSD(last); v.className="val "+AB.cls(last);
+      } else { $("eq-chart").innerHTML = '<div class="loading">ยังไม่มีไม้ปิดพอวาดกราฟ</div>'; }
       if(ov && ov.real_account){
         var ra=ov.real_account;
         $("k-eq").textContent = ra.equity!=null ? "$"+Number(ra.equity).toLocaleString("en-US",{maximumFractionDigits:0}) : "—";

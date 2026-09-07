@@ -140,3 +140,9 @@ td b{color:var(--ink);font-weight:500}
 .disc{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);font-size:11px;color:var(--faint);line-height:1.8;max-width:90ch}
 pre.log{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-family:var(--mono);
   font-size:11px;color:var(--muted);white-space:pre-wrap;line-height:1.7;margin-top:12px;max-height:340px;overflow:auto}
+.chartcard{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px;margin-top:8px}
+.chartcard .ct{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+.chartcard .ct h3{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)}
+.chartcard .ct .val{font-family:var(--mono);font-size:15px}
+.bc.link{cursor:pointer}
+.backlink{font-family:var(--mono);font-size:11px;color:var(--cyan);display:inline-flex;gap:6px;align-items:center;margin-bottom:14px}

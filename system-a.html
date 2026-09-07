@@ -25,6 +25,11 @@
       <div class="k"><div class="l">วันนี้</div><div class="n" id="k-today">—</div><div class="sub" id="k-today-sub">P&amp;L วันนี้</div></div>
     </div>
 
+    <div class="chartcard" style="margin-top:20px">
+      <div class="ct"><h3>เส้นกำไรสะสม · System A</h3><span class="val" id="eq-val">—</span></div>
+      <div id="eq-chart"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+
     <div class="grid2">
       <div class="card"><h3>ไม้ที่เปิดอยู่</h3>
         <table><thead><tr><th>สินทรัพย์</th><th>ทิศทาง</th><th style="text-align:right">ลอต</th><th style="text-align:right">กำไรลอย</th></tr></thead>
@@ -52,9 +57,17 @@ window.AB_INIT = function(){
   };
   function refresh(){
     Promise.all([ AB.getA("/api/stats"), AB.getA("/api/stats_period?period=today"),
-                  AB.getA("/api/positions_public"), AB.getA("/trade_history.json"), AB.getA("/api/by_bot") ])
+                  AB.getA("/api/positions_public"), AB.getA("/trade_history.json"),
+                  AB.getA("/api/by_bot"), AB.getA("/api/perf") ])
     .then(function(r){
       var m = r[0] && r[0].summary;
+
+      var perf = r[5];
+      if(perf && perf.equity_a && perf.equity_a.length){
+        $("eq-chart").innerHTML = AB.spark(perf.equity_a, {h:160});
+        var last = perf.equity_a[perf.equity_a.length-1];
+        var ev = $("eq-val"); ev.textContent = AB.fmtUSD(last); ev.className = "val "+AB.cls(last);
+      }
       if(m){
         var ne=$("k-net"); ne.textContent=AB.fmtUSD(m.net_profit); ne.className="n "+AB.cls(m.net_profit);
         $("k-net-sub").textContent=AB.fmtInt(m.total_closed)+" เทรด";
@@ -83,13 +96,14 @@ window.AB_INIT = function(){
         var recent=(b.recent||[]).map(function(x){
           return '<div class="row"><span class="s">'+AB.esc(x.strategy||"")+'</span><span class="p '+
             (x.result==="win"?"g":(x.result==="loss"?"r":""))+'">'+AB.fmtUSD(x.profit)+'</span></div>'; }).join("");
-        return '<div class="bc"><div class="top"><div class="nm"><span class="dot" style="background:'+
+        return '<a class="bc link" href="/bot?b='+encodeURIComponent(b.bot)+'"><div class="top"><div class="nm"><span class="dot" style="background:'+
           (b.net_profit>=0?"var(--green)":"var(--red)")+'"></span>'+AB.esc(b.bot)+'</div><span class="chip">'+
           AB.esc(DESC[b.bot]||"")+'</span></div>'+
           '<div class="big '+AB.cls(b.net_profit)+'">'+AB.fmtUSD(b.net_profit)+'</div>'+
           '<div class="metrics"><span>WR <b>'+b.win_rate.toFixed(1)+'%</b></span><span>ไม้ <b>'+AB.fmtInt(b.trades)+'</b></span><span>'+w+'W / '+l+'L</span></div>'+
           '<div class="bar"><span class="w" style="width:'+(w/tot*100)+'%"></span><span class="l" style="width:'+(l/tot*100)+'%"></span></div>'+
-          (recent? '<div class="rec">'+recent+'</div>':'<div class="empty">ยังไม่มีไม้ปิด</div>')+'</div>';
+          (recent? '<div class="rec">'+recent+'</div>':'<div class="empty">ยังไม่มีไม้ปิด</div>')+
+          '<div class="go">เจาะรายละเอียด '+AB.esc(b.bot)+' →</div></a>';
       }).join("") : '<div class="loading">โหลดข้อมูลรายบอทไม่ได้</div>';
 
       AB.live(!!m);

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เจาะรายบอท — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="หน้าเจาะรายละเอียดรายบอทของ AiBotTrade — เส้นกำไรสะสม, ผลแยกกลยุทธ์, ไม้ล่าสุด ของบอทแต่ละตัวในระบบ A">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css">
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <a class="backlink" href="/system-a">← กลับหน้า ระบบ A</a>
+    <div class="phead"><span class="no" id="tag">·</span><h1 id="title">เจาะรายบอท</h1></div>
+    <p class="plede" id="desc">กำลังโหลด…</p>
+
+    <div class="kpi">
+      <div class="k"><div class="l">กำไรสุทธิ</div><div class="n" id="k-net">—</div><div class="sub" id="k-net-sub"></div></div>
+      <div class="k"><div class="l">Win Rate</div><div class="n c" id="k-wr">—</div><div class="sub" id="k-wr-sub">W/L</div></div>
+      <div class="k"><div class="l">ไม้ปิดสะสม</div><div class="n" id="k-tr">—</div><div class="sub">ของบอทนี้</div></div>
+      <div class="k"><div class="l">กลยุทธ์ที่ใช้</div><div class="n" id="k-st">—</div><div class="sub">มีไม้ปิดแล้ว</div></div>
+    </div>
+
+    <div class="chartcard" style="margin-top:20px">
+      <div class="ct"><h3>เส้นกำไรสะสมของบอทนี้</h3><span class="val" id="eq-val">—</span></div>
+      <div id="eq-chart"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="st">ผลแยกตามกลยุทธ์</div>
+      <div class="card"><table><thead><tr><th>กลยุทธ์</th><th style="text-align:right">ไม้</th><th style="text-align:right">ชนะ%</th><th style="text-align:right">กำไรสุทธิ</th></tr></thead>
+        <tbody id="strat"><tr><td colspan="4" class="loading">กำลังโหลด…</td></tr></tbody></table></div>
+    </div>
+
+    <div class="sec">
+      <div class="st">ไม้ล่าสุด 15 ไม้</div>
+      <div class="card"><table><thead><tr><th>วันที่</th><th>กลยุทธ์</th><th>สินทรัพย์</th><th style="text-align:right">R</th><th style="text-align:right">กำไร</th></tr></thead>
+        <tbody id="recent"><tr><td colspan="5" class="loading">กำลังโหลด…</td></tr></tbody></table></div>
+    </div>
+  </main>
+</div>
+
+<script>
+window.AB_INIT = function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var DESC = {
+    "Classic":"หัวหน้าทีม 16 กลยุทธ์ · ทองคำ · ให้คะแนน 0–100 ทุก 30 วิ",
+    "Cent":"ฝาแฝด engine เดียวกับ Classic · รับสัญญาณส่วนกลาง · ตัวทดลอง A/B",
+    "APEX":"Gold Sniper 5 เครื่องยนต์ (ORACLE→SNIPER→GUARDIAN→SCULPTOR→SAGE)",
+    "NEXUS":"สภา 13 เอเจนต์โหวต · quorum + confluence + Kelly sizing เข้มสุด",
+    "Basket":"multi-pair confluence · ทอง + 6 forex เปิดเป็นตะกร้า",
+    "SevenEleven":"เกมเทรด RPG · คู่เงินเป็นด่าน กลยุทธ์เป็นอาวุธ",
+    "BTC":"engine เดียวกับ Classic · เก็บข้อมูลเสาร์–อาทิตย์"
+  };
+  var want = (new URLSearchParams(location.search)).get("b") || "";
+  document.title = (want||"เจาะรายบอท") + " — AiBotTrade";
+
+  function refresh(){
+    AB.getA("/api/perf").then(function(p){
+      if(!p || !p.bots){ AB.live(false); return; }
+      var b = p.bots.filter(function(x){ return x.bot === want; })[0];
+      if(!b){ $("desc").textContent = 'ไม่พบข้อมูลบอท "'+want+'" — กลับไปเลือกจากหน้า ระบบ A'; AB.live(true); return; }
+
+      $("title").textContent = b.bot;
+      $("desc").textContent = DESC[b.bot] || "";
+      var ne=$("k-net"); ne.textContent=AB.fmtUSD(b.net_profit); ne.className="n "+AB.cls(b.net_profit);
+      $("k-net-sub").textContent = "จาก "+AB.fmtInt(b.trades)+" ไม้";
+      $("k-wr").textContent = AB.pct(b.win_rate);
+      $("k-wr-sub").textContent = AB.fmtInt(b.wins)+"W / "+AB.fmtInt(b.losses)+"L";
+      $("k-tr").textContent = AB.fmtInt(b.trades);
+      $("k-st").textContent = AB.fmtInt((b.strategies||[]).length);
+
+      var eq = b.equity_ds || [];
+      $("eq-chart").innerHTML = AB.spark(eq, {h:170});
+      if(eq.length){ var last=eq[eq.length-1]; var v=$("eq-val"); v.textContent=AB.fmtUSD(last); v.className="val "+AB.cls(last); }
+
+      var st = b.strategies || [];
+      $("strat").innerHTML = st.length ? st.map(function(s){
+        return '<tr><td><b>'+AB.esc(s.strategy)+'</b></td><td class="v">'+AB.fmtInt(s.total)+
+          '</td><td class="v am">'+(s.win_rate!=null?s.win_rate.toFixed(0)+"%":"—")+
+          '</td><td class="v '+AB.cls(s.net_profit)+'">'+AB.fmtUSD(s.net_profit)+'</td></tr>';
+      }).join("") : '<tr><td colspan="4" class="loading">—</td></tr>';
+
+      var rc = b.recent || [];
+      $("recent").innerHTML = rc.length ? rc.map(function(t){
+        var d=(t.close_time||"").slice(0,16);
+        var r=(typeof t.r_multiple==="number")?((t.r_multiple>=0?"+":"")+t.r_multiple.toFixed(2)):"—";
+        return '<tr><td class="mono" style="font-size:10.5px">'+AB.esc(d)+'</td><td><b>'+AB.esc(t.strategy||"")+
+          '</td><td>'+AB.esc(t.symbol||"")+'</td><td class="v '+(t.result==="win"?"g":(t.result==="loss"?"r":""))+'">'+r+
+          '</td><td class="v '+AB.cls(t.profit)+'">'+AB.fmtUSD(t.profit)+'</td></tr>';
+      }).join("") : '<tr><td colspan="5" class="loading">—</td></tr>';
+
+      AB.live(true);
+    });
+  }
+  AB.every(refresh);
+};
+</script>
+<script src="/assets/shell.js"></script>
+</body>
+</html>

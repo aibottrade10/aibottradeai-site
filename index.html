@@ -24,6 +24,11 @@
       <div class="k"><div class="l">โปรเซสทำงาน 24 ชม.</div><div class="n c">23</div><div class="sub">watchdog เฝ้ากู้อัตโนมัติ</div></div>
     </div>
 
+    <div class="chartcard" style="margin-top:20px">
+      <div class="ct"><h3>เส้นกำไรสะสม · System A</h3><span class="val" id="eq-val">—</span></div>
+      <div id="eq-chart"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+
     <div class="sec">
       <div class="st">แยกตามระบบ</div>
       <div class="cardgrid" id="sysgrid"><div class="loading">กำลังโหลด…</div></div>
@@ -35,9 +40,13 @@
 window.AB_INIT = function(){
   var $ = function(id){ return document.getElementById(id); };
   function refresh(){
-    Promise.all([ AB.getA("/api/stats"), AB.getB("/api/overview"), AB.getA("/api/seveneleven") ])
+    Promise.all([ AB.getA("/api/stats"), AB.getB("/api/overview"), AB.getA("/api/seveneleven"), AB.getA("/api/perf") ])
     .then(function(r){
-      var A=r[0], B=r[1], S=r[2];
+      var A=r[0], B=r[1], S=r[2], P=r[3];
+      if(P && P.equity_a && P.equity_a.length){
+        $("eq-chart").innerHTML = AB.spark(P.equity_a, {h:150});
+        var lp=P.equity_a[P.equity_a.length-1]; var v=$("eq-val"); v.textContent=AB.fmtUSD(lp); v.className="val "+AB.cls(lp);
+      }
       var aNet = A && A.summary ? A.summary.net_profit : null;
       var aTr  = A && A.summary ? A.summary.total_closed : null;
       var aWr  = A && A.summary ? A.summary.win_rate : null;
