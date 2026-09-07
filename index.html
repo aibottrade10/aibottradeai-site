@@ -298,23 +298,30 @@
       sp.className="pill dim"; sp.innerHTML="<i></i>สถานะ: ออฟไลน์ชั่วคราว"; }
   }
 
-  function renderOverview(c){
-    if(!c || !c.system_a) return false;
-    var a=c.system_a, j=a.journal||{}, td=a.today||{};
-    var ne=document.getElementById("k-net"); ne.textContent=fmtUSD(j.net_profit); ne.className="n "+cls(j.net_profit);
-    document.getElementById("k-net-sub").textContent=fmtInt(j.total_closed)+" เทรด";
-    document.getElementById("k-wr").textContent=(j.win_rate!=null? j.win_rate.toFixed(1)+"%":"—");
-    document.getElementById("k-wr-sub").textContent=fmtInt(j.wins)+"W / "+fmtInt(j.losses)+"L";
-    document.getElementById("k-tr").textContent=fmtInt(j.total_closed);
-    var te=document.getElementById("k-today"); te.textContent=fmtUSD(td.pnl); te.className="n "+cls(td.pnl);
-    document.getElementById("k-today-sub").textContent=(td.total!=null? td.wins+"W / "+td.losses+"L":"—");
+  function renderKPI(stats, today){
+    var m = (stats && stats.summary) || null;
+    if(m){
+      var ne=document.getElementById("k-net"); ne.textContent=fmtUSD(m.net_profit); ne.className="n "+cls(m.net_profit);
+      document.getElementById("k-net-sub").textContent=fmtInt(m.total_closed)+" เทรด";
+      document.getElementById("k-wr").textContent=(m.win_rate!=null? m.win_rate.toFixed(1)+"%":"—");
+      document.getElementById("k-wr-sub").textContent=fmtInt(m.wins)+"W / "+fmtInt(m.losses)+"L";
+      document.getElementById("k-tr").textContent=fmtInt(m.total_closed);
+    }
+    var a = (today && today.auto) || null;
+    if(a){
+      var te=document.getElementById("k-today"); te.textContent=fmtUSD(a.pnl); te.className="n "+cls(a.pnl);
+      document.getElementById("k-today-sub").textContent=(a.total!=null? a.wins+"W / "+a.losses+"L":"—");
+    }
+    return !!m;
+  }
 
-    var pos=a.positions||[], pb=document.getElementById("pos-body");
+  function renderPositions(pp){
+    var pos = (pp && pp.positions) || [];
+    var pb=document.getElementById("pos-body");
     pb.innerHTML = pos.length ? pos.map(function(p){
       return '<tr><td><b>'+esc(p.symbol)+'</b></td><td>'+(p.type==="buy"?"ซื้อ":"ขาย")+
         '</td><td class="v">'+p.volume+'</td><td class="v '+cls(p.profit)+'">'+fmtUSD(p.profit)+'</td></tr>';
     }).join("") : '<tr><td colspan="4" class="loading">ไม่มีไม้เปิด</td></tr>';
-    return true;
   }
 
   function renderRecent(rows){
@@ -392,14 +399,17 @@
   }
 
   function refresh(){
-    Promise.all([ getJSON("/api/combined"), getJSON("/trade_history.json"), getJSON("/api/by_bot"),
-                  getJSON("/ai_brain_knowledge.json"), getJSON("/api/manual_trades") ])
+    Promise.all([ getJSON("/api/stats"), getJSON("/api/stats_period?period=today"),
+                  getJSON("/api/positions_public"), getJSON("/trade_history.json"),
+                  getJSON("/api/by_bot"), getJSON("/ai_brain_knowledge.json"),
+                  getJSON("/api/manual_trades") ])
     .then(function(r){
-      var ok = renderOverview(r[0]);
-      renderRecent(r[1]);
-      renderBots(r[2]);
-      renderBrain(r[3]);
-      renderSignals(r[4]);
+      var ok = renderKPI(r[0], r[1]);
+      renderPositions(r[2]);
+      renderRecent(r[3]);
+      renderBots(r[4]);
+      renderBrain(r[5]);
+      renderSignals(r[6]);
       setLive(ok);
     });
   }
