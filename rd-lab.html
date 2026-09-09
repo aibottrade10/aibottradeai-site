@@ -5,11 +5,76 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>R&D Lab — AiBotTrade</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<meta name="description" content="R&D Lab ของ AiBotTrade — Variant Lab ทดสอบไอเดียกลยุทธ์ใหม่แบบกระดาษคู่ขนาน + R&D Agent ค้นเทคนิคใหม่รายวัน ดูโรสเตอร์และสถิติรับ/ปฏิเสธ">
+<meta name="description" content="R&D Lab ของ AiBotTrade — Variant Lab ทดสอบไอเดียกลยุทธ์ใหม่แบบกระดาษคู่ขนาน + R&D Agent ค้นเทคนิคใหม่รายวัน ดูโรสเตอร์ R-multiple และสถิติรับ/ปฏิเสธ">
 <meta name="theme-color" content="#0a0e17">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/assets/shell.css?v=2">
+<style>
+  /* ---- Variant Lab Ledger detail (ported from the internal ledger artifact) ---- */
+  .vlab-thresh{font-family:var(--mono);font-size:10.5px;color:var(--muted);background:var(--panel-2);
+    border:1px solid var(--line-2);padding:4px 10px;border-radius:20px;white-space:nowrap}
+  .sec .st.row-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .vlab-note{font-size:11.5px;color:var(--faint);margin:-4px 0 14px;max-width:74ch;line-height:1.55}
+
+  .vlab-ruler{position:relative;height:14px;font-family:var(--mono);font-size:9.5px;color:var(--faint);
+    margin:0 96px 6px 132px}
+  .vlab-ruler span{position:absolute;transform:translateX(-50%)}
+  @media(max-width:760px){.vlab-ruler{display:none}}
+
+  .vlab-roster{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .vlab-row{display:grid;grid-template-columns:120px minmax(0,1fr) 92px 96px;gap:12px;align-items:center;
+    padding:12px 15px;border-top:1px solid var(--line)}
+  .vlab-row:first-child{border-top:none}
+  .vlab-row:nth-child(odd){background:rgba(255,255,255,.015)}
+  .vlab-id{min-width:0}
+  .vlab-id .id{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .vlab-id .fam{font-size:9.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+  .vlab-bar-cell{position:relative;height:22px}
+  .vlab-bar-cell::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line-2)}
+  .vlab-bar{position:absolute;top:4px;bottom:4px;border-radius:2px}
+  .vlab-bar.pos{background:var(--green);left:50%}
+  .vlab-bar.neg{background:var(--red);right:50%}
+  .vlab-rval{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10.5px;font-weight:500;white-space:nowrap}
+  .vlab-rval.pos{color:var(--green)} .vlab-rval.neg{color:var(--red)} .vlab-rval.zero{color:var(--faint)}
+
+  .vlab-n{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-align:right}
+  .vlab-nbar{height:3px;background:var(--panel-2);border-radius:2px;margin-top:4px;overflow:hidden}
+  .vlab-nbar i{display:block;height:100%;background:var(--muted);opacity:.55}
+  .vlab-nfrac{display:block;font-size:8.5px;color:var(--faint);margin-top:3px}
+
+  .vlab-meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .vlab-wr{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .vlab-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;
+    padding:2px 7px 2px 6px;border-radius:20px;white-space:nowrap;border:1px solid var(--line-2);color:var(--muted)}
+  .vlab-badge i{width:5px;height:5px;border-radius:50%;display:inline-block;background:currentColor}
+  .vlab-badge.b-rd{color:var(--cyan);border-color:var(--cyan-line);background:var(--cyan-soft)}
+  .vlab-badge.b-boss{color:var(--amber);border-color:#e8b04b33;background:#e8b04b12}
+
+  @media(max-width:760px){
+    .vlab-row{grid-template-columns:1fr auto;gap:6px 12px;padding:13px 14px}
+    .vlab-bar-cell{grid-column:1/-1;order:3}
+    .vlab-n{grid-column:1;order:4;text-align:left}
+    .vlab-meta{order:2;flex-direction:row;align-items:center}
+  }
+
+  .vlab-legend{display:flex;flex-wrap:wrap;gap:14px 20px;margin:14px 2px 0;font-size:10.5px;color:var(--faint)}
+  .vlab-legend span{display:inline-flex;align-items:center;gap:6px}
+  .vlab-legend i{width:6px;height:6px;border-radius:50%;display:inline-block}
+
+  /* R&D day activity — horizontal stacked rows (ledger style) */
+  .vlab-rd{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:6px 16px}
+  .vlab-rd .d{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .vlab-rd .d:first-child{border-top:none}
+  .vlab-rd .d .dt{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .vlab-rd .d .stk{display:flex;height:9px;border-radius:3px;overflow:hidden;background:var(--panel-2);border:1px solid var(--line)}
+  .vlab-rd .d .stk .acc{background:var(--green)}
+  .vlab-rd .d .stk .rej{background:var(--red);opacity:.5}
+  .vlab-rd .d .ct{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
+  .vlab-rd .d .ct b{color:var(--ink)}
+</style>
 </head>
 <body>
 <div class="app">
@@ -26,14 +91,29 @@
     </div>
 
     <div class="sec">
-      <div class="st">R&amp;D Agent — รับ/ปฏิเสธ ไอเดียรายวัน</div>
-      <div class="daybars" id="daybars"><div class="loading">กำลังโหลด…</div></div>
+      <div class="st row-head">
+        <span>โรสเตอร์ผู้เล่น — R-multiple เฉลี่ยต่อไม้</span>
+        <span class="vlab-thresh">ผ่านเกณฑ์: n&ge;30 · avg&nbsp;R&nbsp;&gt;&nbsp;+0.15 · WR&nbsp;&ge;&nbsp;45%</span>
+      </div>
+      <p class="vlab-note">เรียงจาก avg&nbsp;R มากไปน้อย — แถบเขียวยื่นขวา = กำไรเฉลี่ยเป็นบวก, แถบแดงยื่นซ้าย = ขาดทุนเฉลี่ยเป็นลบ เส้นกึ่งกลางคือ 0 · แถบบางใต้ตัวเลข n คือความคืบหน้าเข้าหาเป้า 30 ไม้ · ยังไม่มีตัวไหนถึง n&ge;30 จึงยังฟันธงไม่ได้</p>
+      <div class="vlab-ruler">
+        <span style="left:0%">&minus;1.5R</span>
+        <span style="left:33.3%">&minus;0.5R</span>
+        <span style="left:50%">0</span>
+        <span style="left:66.6%">+0.5R</span>
+        <span style="left:100%">+1.5R</span>
+      </div>
+      <div class="vlab-roster" id="roster"><div class="loading" style="padding:14px 15px">กำลังโหลด…</div></div>
+      <div class="vlab-legend">
+        <span><i style="background:var(--cyan)"></i> R&amp;D Agent เสนอเอง</span>
+        <span><i style="background:var(--muted)"></i> baseline / research ตั้งต้น</span>
+        <span><i style="background:var(--amber)"></i> เจ้านายเสนอ</span>
+      </div>
     </div>
 
     <div class="sec">
-      <div class="st">โรสเตอร์ผู้เล่น (เรียงตาม avg R มากไปน้อย)</div>
-      <div class="card"><table><thead><tr><th>ผู้เล่น</th><th>ตระกูล</th><th>ที่มา</th><th style="text-align:right">ไม้</th><th style="text-align:right">ชนะ%</th><th style="text-align:right">avg R</th></tr></thead>
-        <tbody id="roster"><tr><td colspan="6" class="loading">กำลังโหลด…</td></tr></tbody></table></div>
+      <div class="st">R&amp;D Agent — รับ/ปฏิเสธ ไอเดียรายวัน</div>
+      <div class="vlab-rd" id="daybars"><div class="loading" style="padding:12px 0">กำลังโหลด…</div></div>
     </div>
 
     <div class="sec">
@@ -46,38 +126,68 @@
 <script>
 window.AB_INIT = function(){
   var $ = function(id){ return document.getElementById(id); };
-  var SRC = { rd:"R&D Agent", base:"พื้นฐาน", boss:"เจ้านายเสนอ" };
+  var SRC   = { rd:"R&D Agent", base:"พื้นฐาน", boss:"เจ้านายเสนอ" };
+  var BCLS  = { rd:"b-rd", base:"b-base", boss:"b-boss" };
+  var SCALE = 1.5; // ครึ่งสเกลของ ruler (โดเมนเต็ม -1.5R..+1.5R)
+
+  function rosterRow(x){
+    var hasN = x.n > 0;
+    var r = Number(x.r || 0);
+    var pct = Math.min(Math.abs(r) / SCALE * 50, 50);
+    var pos = r >= 0;
+    var bar = hasN
+      ? '<div class="vlab-bar ' + (pos ? 'pos' : 'neg') + '" style="width:' + pct + '%"></div>'
+      : '';
+    var rlab = !hasN
+      ? '<span class="vlab-rval zero" style="left:52%">ยังไม่มีไม้</span>'
+      : '<span class="vlab-rval ' + (pos ? 'pos' : 'neg') + '" style="' +
+          (pos ? 'left:calc(50% + ' + pct + '% + 6px)' : 'right:calc(50% + ' + pct + '% + 6px)') +
+        '">' + (pos ? '+' : '') + r.toFixed(3) + 'R</span>';
+    var nPct = Math.min((x.n || 0) / 30 * 100, 100);
+    var bcls = BCLS[x.src] || 'b-base';
+    return '<div class="vlab-row">' +
+        '<div class="vlab-id"><span class="id">' + AB.esc(x.id) + '</span>' +
+          '<span class="fam">' + AB.esc(x.family || '') + '</span></div>' +
+        '<div class="vlab-bar-cell">' + bar + rlab + '</div>' +
+        '<div class="vlab-n">n=' + AB.fmtInt(x.n || 0) +
+          '<span class="vlab-nbar"><i style="width:' + nPct + '%"></i></span>' +
+          '<span class="vlab-nfrac">เป้า 30</span></div>' +
+        '<div class="vlab-meta">' +
+          '<span class="vlab-wr">' + (x.wr == null ? '&mdash;' : Number(x.wr).toFixed(0) + '%') + '</span>' +
+          '<span class="vlab-badge ' + bcls + '"><i></i>' + AB.esc(SRC[x.src] || x.src || '') + '</span>' +
+        '</div>' +
+      '</div>';
+  }
+
   function refresh(){
     AB.getA("/api/rd_lab").then(function(d){
-      var v = d && d.scan && d.scan.variants;
+      var v  = d && d.scan && d.scan.variants;
       var rd = d && d.scan && d.scan.rd_daily;
       if(v){
-        $("k-active").textContent = AB.fmtInt(v.active_count);
-        $("k-active-sub").textContent = "/ "+(v.max_roster||"—");
-        $("k-rd").textContent = AB.fmtInt(v.rd_sourced_active);
-        $("k-ret").textContent = AB.fmtInt(v.retired_count);
-        $("k-closed").textContent = AB.fmtInt(v.total_closed);
-        var rows = (v.rows||[]);
-        $("roster").innerHTML = rows.length ? rows.map(function(x){
-          var rr = (x.r==null) ? "—" : (x.r>=0?"+":"")+Number(x.r).toFixed(2);
-          var rcls = x.r==null ? "" : (x.r>0?"g":(x.r<0?"r":""));
-          return '<tr><td><b>'+AB.esc(x.id)+'</b></td><td>'+AB.esc(x.family)+
-            '</td><td><span class="chip">'+AB.esc(SRC[x.src]||x.src)+'</span></td>'+
-            '<td class="v">'+AB.fmtInt(x.n)+'</td><td class="v">'+(x.wr==null?"—":Number(x.wr).toFixed(1)+"%")+
-            '</td><td class="v '+rcls+'">'+rr+'</td></tr>';
-        }).join("") : '<tr><td colspan="6" class="loading">—</td></tr>';
+        $("k-active").textContent     = AB.fmtInt(v.active_count);
+        $("k-active-sub").textContent  = "/ " + (v.max_roster || "—");
+        $("k-rd").textContent          = AB.fmtInt(v.rd_sourced_active);
+        $("k-ret").textContent         = AB.fmtInt(v.retired_count);
+        $("k-closed").textContent      = AB.fmtInt(v.total_closed);
+        var rows = (v.rows || []).slice().sort(function(a,b){ return Number(b.r||0) - Number(a.r||0); });
+        $("roster").innerHTML = rows.length
+          ? rows.map(rosterRow).join("")
+          : '<div class="loading" style="padding:14px 15px">—</div>';
       }
       if(rd && rd.length){
-        var max = Math.max.apply(null, rd.map(function(x){ return x.evaluated||1; }));
         $("daybars").innerHTML = rd.map(function(x){
-          var h = (x.evaluated||0)/max*100;
-          var acc = (x.accepted||0), rej=(x.rejected||0), t=acc+rej||1;
-          return '<div class="db"><div class="stack" style="height:'+Math.max(h,8)+'%">'+
-            '<span class="acc" style="height:'+(acc/t*100)+'%"></span>'+
-            '<span class="rej" style="height:'+(rej/t*100)+'%"></span></div>'+
-            '<div class="lab">'+AB.esc(x.date_thai)+'<br>'+acc+'รับ / '+rej+'ปฏิเสธ</div></div>';
+          var acc = x.accepted || 0, rej = x.rejected || 0, t = acc + rej || 1;
+          return '<div class="d">' +
+              '<span class="dt">' + AB.esc(x.date_thai || x.date_iso || '') + '</span>' +
+              '<span class="stk">' +
+                '<i class="acc" style="width:' + (acc / t * 100) + '%"></i>' +
+                '<i class="rej" style="width:' + (rej / t * 100) + '%"></i></span>' +
+              '<span class="ct"><b>' + acc + '</b> รับ / <b>' + rej + '</b> ปฏิเสธ</span>' +
+            '</div>';
         }).join("");
-      } else { $("daybars").innerHTML = '<div class="loading">—</div>'; }
+      } else {
+        $("daybars").innerHTML = '<div class="loading" style="padding:12px 0">—</div>';
+      }
 
       var log = (d && d.log_tail) || [];
       $("log").textContent = log.length ? log.join("\n") : "—";
