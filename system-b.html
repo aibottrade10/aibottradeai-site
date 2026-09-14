@@ -38,6 +38,16 @@
     <div class="card" style="margin-top:22px"><h3>ไม้ที่เปิดอยู่ · รายทีม</h3>
       <table><thead><tr><th>ทีม</th><th>สินทรัพย์</th><th>ทิศทาง</th><th style="text-align:right">ลอต</th><th style="text-align:right">กำไรลอย</th></tr></thead>
       <tbody id="open"><tr><td colspan="5" class="loading">กำลังโหลด…</td></tr></tbody></table></div>
+
+    <div class="card" style="margin-top:22px"><h3>เทรดล่าสุด (ทุกทีม)</h3>
+      <table><thead><tr><th>ทีม</th><th>สินทรัพย์</th><th style="text-align:right">ผล</th></tr></thead>
+      <tbody id="recent"><tr><td colspan="3" class="loading">กำลังโหลด…</td></tr></tbody></table></div>
+
+    <div class="sec">
+      <div class="st">ผลงานรายทีม</div>
+      <div class="cardgrid" id="teamboards"><div class="loading">กำลังโหลด…</div></div>
+      <p class="muted-note">* เรียงตามกำไรสุทธิมากไปน้อย · แถบคือสัดส่วนชนะ/แพ้</p>
+    </div>
   </main>
 </div>
 
@@ -53,11 +63,42 @@ window.AB_INIT = function(){
 
       var ct = (r[3] && r[3].closed_trades) || [];
       if(ct.length){
-        ct.sort(function(a,b){ return (a.closed_utc||"") < (b.closed_utc||"") ? -1 : 1; });
-        var run=0, curve=ct.map(function(x){ run += (typeof x.pnl_usd==="number"?x.pnl_usd:0); return run; });
+        var byTime = ct.slice().sort(function(a,b){ return (a.closed_utc||"") < (b.closed_utc||"") ? -1 : 1; });
+        var run=0, curve=byTime.map(function(x){ run += (typeof x.pnl_usd==="number"?x.pnl_usd:0); return run; });
         $("eq-chart").innerHTML = AB.spark(curve, {h:160});
         var last=curve[curve.length-1]; var v=$("eq-val"); v.textContent=AB.fmtUSD(last); v.className="val "+AB.cls(last);
       } else { $("eq-chart").innerHTML = '<div class="loading">ยังไม่มีไม้ปิดพอวาดกราฟ</div>'; }
+
+      // เทรดล่าสุด (ทุกทีม) — ct มาจาก API เรียงจากใหม่→เก่าอยู่แล้ว (_closed_trades sort reverse=True)
+      $("recent").innerHTML = ct.length ? ct.slice(0,10).map(function(t){
+        return '<tr><td><b>'+AB.esc(tn(t.team_id))+'</b></td><td>'+AB.esc(t.symbol||"")+
+          '</td><td class="v '+AB.cls(t.pnl_usd)+'">'+AB.fmtUSD(t.pnl_usd)+'</td></tr>';
+      }).join("") : '<tr><td colspan="3" class="loading">—</td></tr>';
+
+      // ผลงานรายทีม — จัดกลุ่ม ct ตาม team_id (ข้อมูลเดียวกับ eq-chart/recent ด้านบน ไม่ยิง request เพิ่ม)
+      var byTeam = {};
+      ct.forEach(function(t){
+        var k = t.team_id;
+        if(!byTeam[k]) byTeam[k] = { team_id:k, trades:[], wins:0, losses:0, net:0 };
+        byTeam[k].trades.push(t);
+        if(t.result==="win") byTeam[k].wins++; else if(t.result==="loss") byTeam[k].losses++;
+        byTeam[k].net += (typeof t.pnl_usd==="number"?t.pnl_usd:0);
+      });
+      var teamRows = Object.keys(byTeam).map(function(k){ return byTeam[k]; });
+      teamRows.sort(function(a,b){ return b.net - a.net; });
+      $("teamboards").innerHTML = teamRows.length ? teamRows.map(function(b){
+        var w=b.wins, l=b.losses, tot=w+l||1;
+        var recent=b.trades.slice(0,5).map(function(x){
+          return '<div class="row"><span class="s">'+AB.esc(x.symbol||"")+'</span><span class="p '+
+            (x.result==="win"?"g":(x.result==="loss"?"r":""))+'">'+AB.fmtUSD(x.pnl_usd)+'</span></div>'; }).join("");
+        return '<div class="bc"><div class="top"><div class="nm"><span class="dot" style="background:'+
+          (b.net>=0?"var(--green)":"var(--red)")+'"></span>'+AB.esc(tn(b.team_id))+'</div></div>'+
+          '<div class="big '+AB.cls(b.net)+'">'+AB.fmtUSD(b.net)+'</div>'+
+          '<div class="metrics"><span>WR <b>'+(w/tot*100).toFixed(1)+'%</b></span><span>ไม้ <b>'+tot+'</b></span><span>'+w+'W / '+l+'L</span></div>'+
+          '<div class="bar"><span class="w" style="width:'+(w/tot*100)+'%"></span><span class="l" style="width:'+(l/tot*100)+'%"></span></div>'+
+          (recent? '<div class="rec">'+recent+'</div>':'<div class="empty">ยังไม่มีไม้ปิด</div>')+
+        '</div>';
+      }).join("") : '<div class="loading">โหลดข้อมูลรายทีมไม่ได้</div>';
       if(ov && ov.real_account){
         var ra=ov.real_account;
         $("k-eq").textContent = ra.equity!=null ? "$"+Number(ra.equity).toLocaleString("en-US",{maximumFractionDigits:0}) : "—";
