@@ -235,6 +235,7 @@ window.AB_INIT = function(){
         return '<tr><td class="f">'+esc(FTH[k]||k)+'</td><td><span class="an-s '+c+'">'+tx+'</span></td><td class="v">'+esc(v.value)+'</td></tr>'; }).join("");
       return '<div class="an-pred"><div class="an-ph"><span class="id">'+esc(p.id)+'</span>'+
         '<span class="an-pill">'+(((D.sessions||[]).filter(function(m){return m.id===p.session;})[0]||{label:"รอบ "+p.session}).label)+'</span>'+
+        (p.holiday?'<span class="an-pill a">วันหยุดตลาด: '+esc(p.holiday)+'</span>':'')+
         '<span class="t">'+th(p.logged_utc)+' น. · อ้างอิง '+f2(p.ref_price)+'</span>'+
         (sc?'<span class="an-pill '+(sc.outcome_up===(p.p_up>0.5?1:0)?"g":"r")+'">ผล: '+(sc.outcome_up?"ขึ้น":"ลง")+' · Brier '+f2(sc.brier,3)+(sc.R!=null?" · "+sg(sc.R)+"R":"")+'</span>'
             :'<span class="an-pill a">รอให้คะแนน</span>')+'</div>'+
