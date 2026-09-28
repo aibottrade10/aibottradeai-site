@@ -66,6 +66,24 @@
   .tl .ev.breakeven::before{background:var(--cyan)} .tl .ev.cw::before{background:var(--green)} .tl .ev.cl::before{background:var(--red)}
   .an-empty{font-size:12px;color:var(--faint);font-family:var(--mono);border:1px dashed var(--line-2);border-radius:10px;padding:16px;text-align:center}
   .an-foot{margin-top:22px;font-size:11px;color:var(--faint)}
+  .an-news{display:grid}
+  .an-news a,.an-news .it{display:grid;gap:3px;padding:9px 0;border-top:1px solid var(--line)}
+  .an-news>:first-child{border-top:none}
+  .an-news a:hover .hl{color:var(--cyan)}
+  .an-news .hl{color:var(--ink);font-size:12.5px;line-height:1.5}
+  .an-news .mt{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .an-news .nt{font-size:12px;color:var(--muted)}
+  .an-tag{font-family:var(--mono);font-size:9.5px;padding:1px 6px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--muted)}
+  .an-filt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+  .an-filt button{font:inherit;font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:12px;cursor:pointer;
+    background:transparent;border:1px solid var(--line-2);color:var(--muted)}
+  .an-filt button.on{background:var(--cyan-soft);border-color:var(--cyan-line);color:var(--cyan)}
+  .an-filt button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+  .an-spk{display:grid;gap:4px;padding:10px 0;border-top:1px solid var(--line)}
+  .an-spk:first-child{border-top:none}
+  .an-spk .h{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;font-size:12.5px}
+  .an-spk ul{margin:2px 0 0 16px;font-size:11.5px;color:var(--muted)}
+  .an-ns{margin-top:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:4px 12px}
 </style>
 </head>
 <body>
@@ -73,7 +91,7 @@
   <div id="ab-side"></div>
   <main id="ab-main">
     <div class="phead"><span class="no">11</span><h1>AI Analyst · ทองคำ</h1></div>
-    <p class="plede">AI วิเคราะห์ทองคำวันละ 2 รอบ (ก่อนลอนดอนเปิด และหลังข่าวสหรัฐ) จาก 12 ปัจจัย บันทึกคำทำนายก่อนรู้ผลทุกครั้ง แล้ววางออเดอร์บนบัญชีเดโม่ตามกติกาที่ล็อกไว้ เพื่อวัดว่าชนะการเดาสุ่มจริงหรือไม่ ต้องครบ 60 คำทำนายจึงตัดสินผล</p>
+    <p class="plede">AI วิเคราะห์ทองคำวันละ 2 รอบ (ก่อนลอนดอนเปิด และหลังข่าวสหรัฐ) จาก 12 ปัจจัย บันทึกคำทำนายก่อนรู้ผลทุกครั้ง แล้ววางออเดอร์บนบัญชีเดโม่ตามกติกาที่ล็อกไว้ เพื่อวัดว่าชนะการเดาสุ่มจริงหรือไม่ ต้องครบ 60 คำทำนายจึงตัดสินผล · ตั้งแต่ v1.3 AI อ่านข่าวนอกตาราง (เฟด ภูมิรัฐศาสตร์ ภาษีนำเข้า) ประกอบทุกรอบ และเฝ้าราคาวิ่งผิดปกติทุก 10 นาที</p>
     <div class="an-meta" id="an-meta"><span class="an-pill">กำลังโหลด…</span></div>
     <div class="kpi" id="an-kpi"></div>
     <div class="an-layout">
@@ -163,6 +181,11 @@ window.AB_INIT = function(){
         '<div class="an-ph" style="margin-top:9px"><span class="t">โอกาสขึ้น</span><b class="mono">'+f2(p.p_up)+'</b>'+
         '<span class="an-p" aria-hidden="true"><i style="left:calc('+(p.p_up*100)+'% - 1.5px)"></i></span>'+plan+'</div>'+
         '<p class="an-rat">'+esc(p.rationale)+'</p><div class="an-note" style="margin-top:0">หนุนขึ้น '+t["1"]+' · หนุนลง '+t["-1"]+' · กลาง '+t["0"]+'</div>'+
+        (p.news_scan&&p.news_scan.length?'<div class="an-ns"><div class="an-news">'+p.news_scan.map(function(n){
+            var c=n.signal>0?"g":n.signal<0?"r":"", tx=n.signal>0?"หนุนขึ้น":n.signal<0?"หนุนลง":"กลาง";
+            return '<div class="it"><div class="mt"><span class="an-pill '+c+'">'+tx+'</span>'+esc(n.source||"")+(n.utc?' · '+th(n.utc)+' น.':'')+'</div>'+
+              '<div class="hl">'+esc(n.headline)+'</div>'+(n.note?'<div class="nt">→ '+esc(n.note)+'</div>':'')+'</div>'; }).join("")+'</div></div>'
+          :'<div class="an-note">รอบนี้ยังไม่มีการอ่านข่าวนอกตาราง (เริ่มใช้ตั้งแต่ v1.3)</div>')+
         '<div class="an-scroll"><table class="an-fx"><thead><tr><th>ปัจจัย</th><th>สัญญาณ</th><th>ค่าที่เห็นตอนวิเคราะห์</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
     }).join("");
     left+='<div class="card"><div class="an-h"><h3>บทวิเคราะห์ทุกรอบ</h3><span class="an-pill">บันทึกก่อนรู้ผลเสมอ</span></div>'+(preds||'<div class="an-empty">ยังไม่มีคำทำนาย</div>')+'</div>';
@@ -199,12 +222,32 @@ window.AB_INIT = function(){
       return '<div class="ev '+c+'"><div class="d">'+th(e.utc)+' น. · '+esc(e.id||"")+'</div><div class="b">'+lab(e)+'</div></div>'; }).join("");
     right+='<div class="card"><div class="an-h"><h3>เหตุการณ์ของไม้</h3></div>'+(ev?'<div class="tl">'+ev+'</div>':'<div class="an-empty">ยังไม่มีเหตุการณ์</div>')+'</div>';
 
+    var sp=(D.spikes||[]).slice(0,6).map(function(x){
+      return '<div class="an-spk"><div class="h"><span class="mono '+(x.move_15m>0?"g":"r")+'">'+(x.move_15m>0?"▲ ":"▼ ")+f2(Math.abs(x.move_15m),1)+' จุด / 15 นาที</span>'+
+        '<span class="an-tag">'+f2(x.x,1)+'× ปกติ</span><span class="mono" style="font-size:10.5px;color:var(--faint)">'+th(x.utc)+' น. · '+f2(x.price)+'</span></div>'+
+        (x.headlines&&x.headlines.length?'<ul>'+x.headlines.slice(0,3).map(function(h){return '<li>'+esc(h.headline)+'</li>';}).join("")+'</ul>'
+          :'<div class="an-note" style="margin-top:0">ไม่พบพาดหัวข่าวที่เกี่ยวข้องในช่วงนั้น</div>')+'</div>'; }).join("");
+    right+='<div class="card"><div class="an-h"><h3>ราคาวิ่งผิดปกติ</h3><span class="an-pill">เช็คทุก 10 นาที</span></div>'+
+      (sp||'<div class="an-empty">ยังไม่พบช่วงที่ราคาวิ่งผิดปกติ (แท่ง M5 ≥ 3 เท่าของปกติ)</div>')+'</div>';
+
+    var NEWS=D.news||[], tags={}; NEWS.forEach(function(n){ (n.tags||[]).forEach(function(t){ tags[t]=(tags[t]||0)+1; }); });
+    var cur=window.__anTag||"ทั้งหมด";
+    var filt='<div class="an-filt" role="group" aria-label="กรองข่าวตามหัวข้อ">'+["ทั้งหมด"].concat(Object.keys(tags)).map(function(t){
+      return '<button type="button" class="'+(t===cur?"on":"")+'" data-tag="'+esc(t)+'">'+esc(t)+(t==="ทั้งหมด"?"":" "+tags[t])+'</button>'; }).join("")+'</div>';
+    var list=NEWS.filter(function(n){ return cur==="ทั้งหมด"||(n.tags||[]).indexOf(cur)>=0; }).slice(0,15).map(function(n){
+      var inner='<div class="mt">'+th(n.utc)+' น. · '+esc(n.source)+' '+(n.tags||[]).map(function(t){return '<span class="an-tag">'+esc(t)+'</span>';}).join(" ")+'</div><div class="hl">'+esc(n.headline)+'</div>';
+      return /^https?:\/\//.test(n.link||"")?'<a href="'+esc(n.link)+'" target="_blank" rel="noopener">'+inner+'</a>':'<div class="it">'+inner+'</div>'; }).join("");
+    right+='<div class="card" id="an-newscard"><div class="an-h"><h3>ฟีดข่าวที่ AI เฝ้าอยู่ (48 ชม.)</h3><span class="an-pill">'+NEWS.length+' ข่าว</span></div>'+
+      (NEWS.length?filt+'<div class="an-news">'+list+'</div><div class="an-note">คัดจาก RSS ฟรี 5 แหล่ง เฉพาะพาดหัวที่เกี่ยวกับทอง เฟด ดอลลาร์ ภูมิรัฐศาสตร์ การค้า เงินเฟ้อ · ภาษาอังกฤษตามต้นฉบับ</div>'
+        :'<div class="an-empty">ยังไม่มีข่าวในฟีด</div>')+'</div>';
+
     right+='<div class="card"><div class="an-h"><h3>กติกาที่บังคับในโค้ด</h3><span class="an-pill">'+esc(D.protocol)+'</span></div><div class="an-rows">'+
       '<div><span>ความเสี่ยง</span><span>0.5% ของ balance ต่อไม้ · ครั้งละ 1 ไม้</span></div>'+
       '<div><span>SL / TP</span><span>RR ≥ 1.5 · SL ≥ 0.5×ATR(H1) · ห้ามเลื่อน SL ออก</span></div>'+
       '<div><span>กันหน้าทุน</span><span>กำไรถึง +1R → SL มาที่ทุน (เช็คทุก 10 นาที)</span></div>'+
       '<div><span>ถือนานสุด</span><span>48 ชม. แล้วปิดอัตโนมัติ</span></div>'+
-      '<div><span>รอบวิเคราะห์</span><span>L 13:43 น. (ก่อนลอนดอน) · N หลังข่าว US 08:30 ET</span></div></div></div>';
+      '<div><span>รอบวิเคราะห์</span><span>L 13:43 น. (ก่อนลอนดอน) · N หลังข่าว US 08:30 ET</span></div>'+
+      '<div><span>ข่าว</span><span>ปฏิทินข่าว + ข่าวนอกตาราง (RSS + ค้นเว็บ) ทุกรอบ · ข่าวใหญ่ที่ยังไม่รู้ผล = ไม่เทรด</span></div></div></div>';
 
     var w=D.weekly&&D.weekly[D.weekly.length-1];
     if(w){ var s=w.scenarios||{};
@@ -215,9 +258,12 @@ window.AB_INIT = function(){
     $("an-right").innerHTML=right;
   }
 
+  var LAST=null;
+  document.addEventListener("click",function(e){ var b=e.target.closest&&e.target.closest(".an-filt button");
+    if(b&&LAST){ window.__anTag=b.getAttribute("data-tag"); render(LAST); } });
   AB.every(function(){
     fetch("/data/ai-analyst.json",{cache:"no-store"}).then(function(r){ if(!r.ok) throw 0; return r.json(); })
-      .then(function(D){ render(D); AB.live(true); })
+      .then(function(D){ LAST=D; render(D); AB.live(true); })
       .catch(function(){ AB.live(false); if(!$("an-kpi").innerHTML) $("an-meta").innerHTML='<span class="an-pill r">โหลดข้อมูลไม่ได้ ลองรีเฟรชหน้า</span>'; });
   });
 };
