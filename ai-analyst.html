@@ -109,7 +109,7 @@
   <div id="ab-side"></div>
   <main id="ab-main">
     <div class="phead"><span class="no">11</span><h1>AI Analyst · ทองคำ</h1></div>
-    <p class="plede">AI วิเคราะห์ทองคำวันละ 2 รอบ (ก่อนลอนดอนเปิด และหลังข่าวสหรัฐ) จาก 12 ปัจจัย บันทึกคำทำนายก่อนรู้ผลทุกครั้ง แล้ววางออเดอร์บนบัญชีเดโม่ตามกติกาที่ล็อกไว้ เพื่อวัดว่าชนะการเดาสุ่มจริงหรือไม่ ต้องครบ 60 คำทำนายจึงตัดสินผล · ตั้งแต่ v1.3 AI อ่านข่าวนอกตาราง (เฟด ภูมิรัฐศาสตร์ ภาษีนำเข้า) ประกอบทุกรอบ และเฝ้าราคาวิ่งผิดปกติทุก 10 นาที</p>
+    <p class="plede">AI วิเคราะห์ทองคำวันละ 5 รอบ ก่อนทุกตลาดหลักเปิด (ซิดนีย์ โตเกียว เซี่ยงไฮ้ ลอนดอน นิวยอร์ก) จาก 12 ปัจจัย บันทึกคำทำนายก่อนรู้ผลทุกครั้ง แล้ววางออเดอร์บนบัญชีเดโม่ตามกติกาที่ล็อกไว้ เพื่อวัดว่าชนะการเดาสุ่มจริงหรือไม่ ต้องครบ 60 คำทำนายจึงตัดสินผล · ตั้งแต่ v1.3 AI อ่านข่าวนอกตาราง (เฟด ภูมิรัฐศาสตร์ ภาษีนำเข้า) ประกอบทุกรอบ และเฝ้าราคาวิ่งผิดปกติทุก 10 นาที</p>
     <div class="an-meta" id="an-meta"><span class="an-pill">กำลังโหลด…</span></div>
     <div class="kpi" id="an-kpi"></div>
     <div id="an-stats"></div>
@@ -191,12 +191,21 @@ window.AB_INIT = function(){
         '<div><span>รอบที่วางแผนเทรด</span><b>'+(P.n_trade_plans||0)+' / '+(P.n_logged||0)+'</b></div>'+
         '<div><span>pending ถูกเปิดเป็นไม้</span><b>'+(P.n_filled||0)+' / '+(P.n_trade_plans||0)+'</b></div></div>'+
         '<div class="an-scroll"><table class="an-ss"><thead><tr><th>แยกตามรอบ</th><th>ไม้</th><th>ชนะ/เสมอ/แพ้</th><th>Win rate</th><th>เฉลี่ย</th><th>รวม</th><th>USD</th></tr></thead><tbody>'+
-        srow("รอบ L ก่อนลอนดอน",T.L)+srow("รอบ N หลังข่าว US",T.N)+'</tbody></table></div>'+
+        (D.sessions||[]).map(function(m){ return srow(esc(m.id)+' · '+esc(m.name),T[m.id]); }).join("")+'</tbody></table></div>'+
         '<div class="an-note">ไม้ที่ปิดที่ทุน (|R| &lt; 0.1 จากระบบกันหน้าทุน) นับเป็น "เสมอทุน" ไม่นับเป็นชนะ · R = กำไรหารด้วยความเสี่ยงเริ่มต้นของไม้นั้น</div></div>';
     } else {
       st='<div class="card" style="grid-column:1/-1"><div class="an-h"><h3>Win rate และสถิติการเทรด</h3></div><div class="an-empty">ยังไม่มีไม้ที่ปิด สถิติจะขึ้นเมื่อปิดไม้แรก</div></div>';
     }
-    $("an-stats").innerHTML='<div class="an-st">'+st+'</div>';
+    var SS=D.session_scores||{};
+    var cmp='<div class="card" style="margin-top:13px"><div class="an-h"><h3>เทียบรายตลาด</h3><span class="an-pill">ตัดตลาดได้เมื่อมีคำทำนาย ≥ 20 ต่อตลาด</span></div>'+
+      '<div class="an-scroll"><table class="an-ss"><thead><tr><th>ตลาด</th><th>คำทำนาย</th><th>ให้คะแนนแล้ว</th><th>Brier</th><th>ทายทิศถูก</th><th>ไม้ปิด</th><th>Win rate</th><th>R เฉลี่ย</th><th>USD</th></tr></thead><tbody>'+
+      (D.sessions||[]).map(function(m){ var q=SS[m.id]||{}, t=T[m.id]||{n:0};
+        return '<tr><td>'+esc(m.id)+' · '+esc(m.name)+'</td><td>'+(q.n_logged||0)+'</td><td>'+(q.n||0)+'/20</td>'+
+          '<td>'+(q.brier==null?'—':'<span class="'+(q.brier<0.24?"g":q.brier>0.25?"r":"")+'">'+f2(q.brier,3)+'</span>')+'</td>'+
+          '<td>'+(q.hit==null?'—':f2(q.hit*100,0)+'%')+'</td><td>'+t.n+'</td><td>'+(t.n?f2(t.win_rate*100,0)+'%':'—')+'</td>'+
+          '<td class="'+AB.cls(t.avg_R)+'">'+(t.n?sg(t.avg_R)+'R':'—')+'</td><td class="'+AB.cls(t.net)+'">'+(t.n?sg(t.net):'—')+'</td></tr>'; }).join("")+
+      '</tbody></table></div><div class="an-note">Brier ต่ำกว่า 0.240 = ทายดีกว่าเดาสุ่ม (เขียว) · สูงกว่า 0.250 = แย่กว่าเดาสุ่ม (แดง) · รอบเอเชีย Y/T/S ช่วงวัดผลซ้อนกันบางส่วน</div></div>';
+    $("an-stats").innerHTML='<div class="an-st">'+st+'</div>'+cmp;
 
     var left="";
     if(pos && pos.orig_sl){
@@ -225,7 +234,7 @@ window.AB_INIT = function(){
       var rows=Object.keys(fs).map(function(k){ var v=fs[k], c=v.signal>0?"p":v.signal<0?"n":"z", tx=v.signal>0?"หนุนขึ้น":v.signal<0?"หนุนลง":"กลาง";
         return '<tr><td class="f">'+esc(FTH[k]||k)+'</td><td><span class="an-s '+c+'">'+tx+'</span></td><td class="v">'+esc(v.value)+'</td></tr>'; }).join("");
       return '<div class="an-pred"><div class="an-ph"><span class="id">'+esc(p.id)+'</span>'+
-        '<span class="an-pill">'+(p.session==="L"?"รอบ L ก่อนลอนดอน":p.session==="N"?"รอบ N หลังข่าว US":esc(p.session))+'</span>'+
+        '<span class="an-pill">'+(((D.sessions||[]).filter(function(m){return m.id===p.session;})[0]||{label:"รอบ "+p.session}).label)+'</span>'+
         '<span class="t">'+th(p.logged_utc)+' น. · อ้างอิง '+f2(p.ref_price)+'</span>'+
         (sc?'<span class="an-pill '+(sc.outcome_up===(p.p_up>0.5?1:0)?"g":"r")+'">ผล: '+(sc.outcome_up?"ขึ้น":"ลง")+' · Brier '+f2(sc.brier,3)+(sc.R!=null?" · "+sg(sc.R)+"R":"")+'</span>'
             :'<span class="an-pill a">รอให้คะแนน</span>')+'</div>'+
@@ -293,11 +302,11 @@ window.AB_INIT = function(){
         :'<div class="an-empty">ยังไม่มีข่าวในฟีด</div>')+'</div>';
 
     right+='<div class="card"><div class="an-h"><h3>กติกาที่บังคับในโค้ด</h3><span class="an-pill">'+esc(D.protocol)+'</span></div><div class="an-rows">'+
-      '<div><span>ความเสี่ยง</span><span>0.5% ของ balance ต่อไม้ · ครั้งละ 1 ไม้</span></div>'+
+      '<div><span>ความเสี่ยง</span><span>0.5% ของ balance ต่อไม้ · รอบละ ≤ 1 ไม้ · รวมทุกรอบ ≤ 3 ไม้ (≤ 1.5%)</span></div>'+
       '<div><span>SL / TP</span><span>RR ≥ 1.5 · SL ≥ 0.5×ATR(H1) · ห้ามเลื่อน SL ออก</span></div>'+
       '<div><span>กันหน้าทุน</span><span>กำไรถึง +1R → SL มาที่ทุน (เช็คทุก 10 นาที)</span></div>'+
       '<div><span>ถือนานสุด</span><span>48 ชม. แล้วปิดอัตโนมัติ</span></div>'+
-      '<div><span>รอบวิเคราะห์</span><span>L 13:43 น. (ก่อนลอนดอน) · N หลังข่าว US 08:30 ET</span></div>'+
+      '<div><span>รอบวิเคราะห์</span><span>5 รอบ/วัน: Y ซิดนีย์ ~05:40 · T โตเกียว ~06:20 · S เซี่ยงไฮ้ ~07:20 · L ลอนดอน 13:43 · N นิวยอร์ก ~19:50 (เวลาไทย เลื่อนตาม DST อัตโนมัติ)</span></div>'+
       '<div><span>ข่าว</span><span>ปฏิทินข่าว + ข่าวนอกตาราง (RSS + ค้นเว็บ) ทุกรอบ · ข่าวใหญ่ที่ยังไม่รู้ผล = ไม่เทรด</span></div></div></div>';
 
     var w=D.weekly&&D.weekly[D.weekly.length-1];
