@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Analyst — AiBotTrade</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="AI Analyst ของ AiBotTrade — forward test ทองคำ XAUUSD บนบัญชีเดโม่: บทวิเคราะห์ 12 ปัจจัยที่บันทึกก่อนรู้ผล, ไม้ปัจจุบัน, กันหน้าทุน +1R และความคืบหน้าสู่ 60 คำทำนาย">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/shell.css?v=3">
+<style>
+  .an-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;padding:2px 9px;border-radius:20px;
+    border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
+  .an-pill i{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .an-pill.g{color:var(--green);border-color:#3ecf8e33;background:#3ecf8e12}
+  .an-pill.r{color:var(--red);border-color:#f0616d33;background:#f0616d12}
+  .an-pill.a{color:var(--amber);border-color:#e8b04b33;background:#e8b04b12}
+  .an-pill.c{color:var(--cyan);border-color:var(--cyan-line);background:var(--cyan-soft)}
+  .an-meta{display:flex;flex-wrap:wrap;gap:7px;margin:-6px 0 16px}
+  .an-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:13px;margin-top:20px;align-items:start}
+  .an-col{display:grid;gap:13px;min-width:0}
+  @media(max-width:1000px){.an-layout{grid-template-columns:1fr}}
+  .card{min-width:0}
+  .an-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+  .an-h h3{margin:0}
+  .an-big{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+  .an-big b{font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:-.02em}
+  .an-big span{font-size:12px;color:var(--muted)}
+  .an-ladder svg{width:100%;height:auto;display:block;margin-top:10px}
+  .an-lv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+  @media(max-width:560px){.an-lv{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .an-lv div{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+  .an-lv span{display:block;font-size:10px;color:var(--faint)}
+  .an-lv b{font-family:var(--mono);font-size:14px;font-weight:500}
+  .an-note{font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.6}
+  .an-bar{height:8px;border-radius:4px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line)}
+  .an-bar i{display:block;height:100%;background:var(--amber)}
+  .an-rows{display:grid}
+  .an-rows div{display:grid;grid-template-columns:118px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+  .an-rows div:first-child{border-top:none}
+  .an-rows div>span:first-child{color:var(--faint);font-family:var(--mono);font-size:11px}
+  .an-rows b{color:var(--ink);font-weight:500}
+  @media(max-width:560px){.an-rows div{grid-template-columns:1fr;gap:2px}}
+  .an-pred{border-top:1px solid var(--line);padding-top:15px;margin-top:15px}
+  .an-pred:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .an-ph{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+  .an-ph .id{font-family:var(--mono);font-weight:500;color:var(--ink)}
+  .an-ph .t{font-size:11.5px;color:var(--faint);font-family:var(--mono)}
+  .an-p{position:relative;height:7px;border-radius:4px;width:min(280px,100%);
+    background:linear-gradient(90deg,#f0616d40,var(--panel-2) 50%,#3ecf8e40)}
+  .an-p::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--line-2)}
+  .an-p i{position:absolute;top:-4px;width:3px;height:15px;border-radius:2px;background:var(--ink)}
+  .an-rat{color:var(--muted);font-size:13px;margin:10px 0 6px;max-width:78ch}
+  .an-scroll{overflow-x:auto;margin-top:8px}
+  .an-fx{width:100%;border-collapse:collapse;font-size:12px}
+  .an-fx th{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:500;text-align:left;padding:7px 9px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+  .an-fx td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--muted)}
+  .an-fx tr:last-child td{border-bottom:none}
+  .an-fx td.f{color:var(--ink);white-space:nowrap}
+  .an-fx td.v{min-width:240px;font-family:var(--mono);font-size:11px}
+  .an-s{display:inline-block;min-width:58px;text-align:center;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:6px}
+  .an-s.p{background:#3ecf8e18;color:var(--green)} .an-s.n{background:#f0616d18;color:var(--red)} .an-s.z{background:var(--panel-2);color:var(--faint)}
+  .tl .ev.sent::before{background:var(--amber)} .tl .ev.fill::before{background:var(--ink)}
+  .tl .ev.breakeven::before{background:var(--cyan)} .tl .ev.cw::before{background:var(--green)} .tl .ev.cl::before{background:var(--red)}
+  .an-empty{font-size:12px;color:var(--faint);font-family:var(--mono);border:1px dashed var(--line-2);border-radius:10px;padding:16px;text-align:center}
+  .an-foot{margin-top:22px;font-size:11px;color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="ab-side"></div>
+  <main id="ab-main">
+    <div class="phead"><span class="no">11</span><h1>AI Analyst · ทองคำ</h1></div>
+    <p class="plede">AI วิเคราะห์ทองคำวันละ 2 รอบ (ก่อนลอนดอนเปิด และหลังข่าวสหรัฐ) จาก 12 ปัจจัย บันทึกคำทำนายก่อนรู้ผลทุกครั้ง แล้ววางออเดอร์บนบัญชีเดโม่ตามกติกาที่ล็อกไว้ เพื่อวัดว่าชนะการเดาสุ่มจริงหรือไม่ ต้องครบ 60 คำทำนายจึงตัดสินผล</p>
+    <div class="an-meta" id="an-meta"><span class="an-pill">กำลังโหลด…</span></div>
+    <div class="kpi" id="an-kpi"></div>
+    <div class="an-layout">
+      <div class="an-col" id="an-left"></div>
+      <div class="an-col" id="an-right"></div>
+    </div>
+    <p class="an-foot">ตัวเลขทุกตัวดึงจาก MT5 และไฟล์บันทึกของ AI Analyst · บัญชีเดโม่ ไม่ใช่เงินจริง · ไม่ใช่คำแนะนำการลงทุน</p>
+  </main>
+</div>
+<script>
+window.AB_INIT = function(){
+  var FTH={d1_trend:"แนวโน้ม D1",h4_trend:"แนวโน้ม H4",h1_momentum:"โมเมนตัม H1",rsi:"RSI",level_location:"แนวรับ/ต้าน",
+    dxy_5d:"ดอลลาร์ DXY 5 วัน",real_yield_20d:"Real yield 20 วัน",oil:"น้ำมัน",vix:"VIX",cot:"COT",news_today:"ข่าววันนี้",spx:"S&P 500"};
+  var REASON={3:"สคริปต์",4:"ชน SL",5:"ชน TP",6:"Stop out",0:"ปิดมือ",1:"ปิดมือ (มือถือ)",2:"ปิดมือ (เว็บ)"};
+  var TM=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  var esc=AB.esc;
+  function f2(x,d){ if(d==null) d=2; return x==null?"—":Number(x).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function sg(x,d){ return x==null?"—":(x>0?"+":"")+f2(x,d); }
+  function th(iso){ if(!iso) return "—"; var t=new Date(new Date(iso).getTime()+7*3600e3), p=function(n){return String(n).padStart(2,"0");};
+    return t.getUTCDate()+" "+TM[t.getUTCMonth()]+" "+p(t.getUTCHours())+":"+p(t.getUTCMinutes()); }
+  function $(id){ return document.getElementById(id); }
+
+  function ladder(p){
+    var buy=p.side==="buy", R=Math.abs(p.entry-p.orig_sl), be=buy?p.sl>=p.entry:(p.sl>0&&p.sl<=p.entry);
+    var v=[p.orig_sl,p.entry,p.sl,p.tp,p.price], lo=Math.min.apply(null,v), hi=Math.max.apply(null,v), pad=(hi-lo)*.06; lo-=pad; hi+=pad;
+    var W=560,x0=36,x1=W-36;
+    function X(q){ var r=(q-lo)/(hi-lo); return buy? x0+r*(x1-x0) : x1-r*(x1-x0); }   // ฝั่งกำไรอยู่ขวาเสมอ
+    function mk(q,lab,col,bottom,dash){ var x=X(q).toFixed(1);
+      return '<line x1="'+x+'" x2="'+x+'" y1="44" y2="84" stroke="'+col+'" stroke-width="2"'+(dash?' stroke-dasharray="4 3"':'')+'/>'+
+        '<text x="'+x+'" y="'+(bottom?112:30)+'" text-anchor="middle" fill="'+col+'" font-size="12" font-family="IBM Plex Sans Thai,sans-serif">'+lab+'</text>'+
+        '<text x="'+x+'" y="'+(bottom?127:15)+'" text-anchor="middle" fill="#5b6579" font-size="11" font-family="IBM Plex Mono,monospace">'+f2(q)+'</text>'; }
+    var zl=Math.min(X(p.entry),X(p.tp)), zw=Math.abs(X(p.tp)-X(p.entry)), rl=Math.min(X(p.entry),X(p.orig_sl)), rw=Math.abs(X(p.orig_sl)-X(p.entry));
+    var px=X(p.price).toFixed(1);
+    var svg='<svg viewBox="0 0 '+W+' 134" role="img" aria-label="ราคาเทียบจุดเข้า SL และ TP">'+
+      '<rect x="'+rl+'" y="56" width="'+rw+'" height="16" fill="#f0616d22"/><rect x="'+zl+'" y="56" width="'+zw+'" height="16" fill="#3ecf8e22"/>'+
+      mk(p.orig_sl,"SL เดิม","#f0616d",1,be)+mk(p.entry,"จุดเข้า","#8a97ad",0)+(be?mk(p.sl,"SL ใหม่ (ทุน)","#38bdf8",1):"")+mk(p.tp,"TP","#3ecf8e",0)+
+      '<circle cx="'+px+'" cy="64" r="7" fill="#e8b04b" stroke="#0f1522" stroke-width="2"/>'+
+      '<text x="'+px+'" y="98" text-anchor="middle" fill="#e8b04b" font-size="11.5" font-family="IBM Plex Mono,monospace">ราคา '+f2(p.price)+'</text></svg>';
+    return {svg:svg,be:be,R:R,mv:(buy?p.price-p.entry:p.entry-p.price)/R};
+  }
+
+  function render(D){
+    var L=D.live||{}, acc=L.account||{}, pos=(L.positions||[])[0], pend=(L.pending||[])[0], S=D.stats;
+    $("an-meta").innerHTML=
+      (pos?'<span class="an-pill '+(pos.side==="sell"?"r":"g")+'"><i></i>ถือไม้ '+pos.side.toUpperCase()+' อยู่</span>'
+          :pend?'<span class="an-pill a"><i></i>มี pending รอ</span>':'<span class="an-pill"><i></i>ไม่มีไม้</span>')+
+      '<span class="an-pill">เดโม่ '+esc(acc.login||"")+' · XAUUSD</span><span class="an-pill">กติกา '+esc(D.protocol)+'</span>'+
+      '<span class="an-pill c">ข้อมูล ณ '+th(D.generated_utc)+' น.</span>';
+    var fl=pos?pos.profit:0;
+    $("an-kpi").innerHTML=
+      '<div class="k"><div class="l">Balance เดโม่</div><div class="n">'+f2(acc.balance)+'</div><div class="sub">'+esc(acc.currency||"USD")+'</div></div>'+
+      '<div class="k"><div class="l">Equity</div><div class="n">'+f2(acc.equity)+'</div><div class="sub '+AB.cls(fl)+'">กำไรลอย '+sg(fl)+'</div></div>'+
+      '<div class="k"><div class="l">คำทำนายที่ให้คะแนนแล้ว</div><div class="n a">'+S.n_scored+' / '+S.target+'</div><div class="sub">บันทึกแล้ว '+D.predictions.length+' รายการ</div></div>'+
+      '<div class="k"><div class="l">ค่าเฉลี่ย R ไม้ที่ปิด</div><div class="n '+AB.cls(S.mean_R)+'">'+(S.mean_R==null?"—":sg(S.mean_R))+'</div><div class="sub">ปิดแล้ว '+D.closed.length+' ไม้</div></div>';
+
+    var left="";
+    if(pos && pos.orig_sl){
+      var g=ladder(pos);
+      left+='<div class="card"><div class="an-h"><h3>ไม้ปัจจุบัน · '+esc(pos.id)+'</h3><span>'+
+        (g.be?'<span class="an-pill c"><i></i>กันหน้าทุนแล้ว</span>':'<span class="an-pill a">ยังไม่ถึง +1R</span>')+' '+
+        '<span class="an-pill '+(pos.side==="sell"?"r":"g")+'">'+pos.side.toUpperCase()+' '+f2(pos.volume)+' lot</span></span></div>'+
+        '<div class="an-big"><b class="'+AB.cls(pos.profit)+'">'+sg(pos.profit)+' USD</b><span class="mono">'+sg(g.mv)+'R</span>'+
+        '<span>ห่าง TP อีก '+f2(Math.abs(pos.tp-pos.price),1)+' จุด · เปิดเมื่อ '+th(pos.opened_utc)+' น.</span></div>'+
+        '<div class="an-ladder">'+g.svg+'</div>'+
+        '<div class="an-lv"><div><span>จุดเข้า</span><b>'+f2(pos.entry)+'</b></div><div><span>SL ตอนนี้</span><b class="'+(g.be?"c":"r")+'">'+f2(pos.sl)+'</b></div>'+
+        '<div><span>TP</span><b class="g">'+f2(pos.tp)+'</b></div><div><span>1R (ความเสี่ยงเริ่มต้น)</span><b>'+f2(g.R,1)+' จุด</b></div></div>'+
+        '<div class="an-note">'+(g.be?'SL ถูกเลื่อนจาก '+f2(pos.orig_sl)+' มาที่ทุนแล้ว ถ้าราคากลับตัว ไม้นี้จะปิดที่ประมาณ 0 ไม่ติดลบ':'เมื่อกำไรถึง +1R ระบบจะเลื่อน SL มาที่ทุนอัตโนมัติ')+'</div></div>';
+    } else {
+      left+='<div class="card"><div class="an-h"><h3>ไม้ปัจจุบัน</h3></div>'+(pend
+        ?'<div class="an-rat">pending '+esc(pend.id)+' รอที่ <span class="mono">'+f2(pend.price)+'</span> · SL <span class="mono">'+f2(pend.sl)+'</span> · TP <span class="mono">'+f2(pend.tp)+'</span></div>'
+        :'<div class="an-empty">ตอนนี้ไม่มีไม้ AI เปิดอยู่</div>')+'</div>';
+    }
+
+    var preds=D.predictions.slice().reverse().map(function(p){
+      var pl=p.plan, sc=p.score, fs=p.factors||{}, t={"1":0,"-1":0,"0":0};
+      Object.keys(fs).forEach(function(k){ t[String(fs[k].signal)]++; });
+      var plan=(pl&&typeof pl==="object")
+        ?'<span class="an-pill '+(pl.side==="sell"?"r":"g")+'">'+pl.side.toUpperCase()+' '+pl.type.toUpperCase()+'</span><span class="t">@ '+f2(pl.entry)+' · SL '+f2(pl.sl)+' · TP '+f2(pl.tp)+' · RR '+f2(Math.abs(pl.tp-pl.entry)/Math.abs(pl.entry-pl.sl))+'</span>'
+        :'<span class="an-pill">ไม่เทรด</span>';
+      var rows=Object.keys(fs).map(function(k){ var v=fs[k], c=v.signal>0?"p":v.signal<0?"n":"z", tx=v.signal>0?"หนุนขึ้น":v.signal<0?"หนุนลง":"กลาง";
+        return '<tr><td class="f">'+esc(FTH[k]||k)+'</td><td><span class="an-s '+c+'">'+tx+'</span></td><td class="v">'+esc(v.value)+'</td></tr>'; }).join("");
+      return '<div class="an-pred"><div class="an-ph"><span class="id">'+esc(p.id)+'</span>'+
+        '<span class="an-pill">'+(p.session==="L"?"รอบ L ก่อนลอนดอน":p.session==="N"?"รอบ N หลังข่าว US":esc(p.session))+'</span>'+
+        '<span class="t">'+th(p.logged_utc)+' น. · อ้างอิง '+f2(p.ref_price)+'</span>'+
+        (sc?'<span class="an-pill '+(sc.outcome_up===(p.p_up>0.5?1:0)?"g":"r")+'">ผล: '+(sc.outcome_up?"ขึ้น":"ลง")+' · Brier '+f2(sc.brier,3)+(sc.R!=null?" · "+sg(sc.R)+"R":"")+'</span>'
+            :'<span class="an-pill a">รอให้คะแนน</span>')+'</div>'+
+        '<div class="an-ph" style="margin-top:9px"><span class="t">โอกาสขึ้น</span><b class="mono">'+f2(p.p_up)+'</b>'+
+        '<span class="an-p" aria-hidden="true"><i style="left:calc('+(p.p_up*100)+'% - 1.5px)"></i></span>'+plan+'</div>'+
+        '<p class="an-rat">'+esc(p.rationale)+'</p><div class="an-note" style="margin-top:0">หนุนขึ้น '+t["1"]+' · หนุนลง '+t["-1"]+' · กลาง '+t["0"]+'</div>'+
+        '<div class="an-scroll"><table class="an-fx"><thead><tr><th>ปัจจัย</th><th>สัญญาณ</th><th>ค่าที่เห็นตอนวิเคราะห์</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+    }).join("");
+    left+='<div class="card"><div class="an-h"><h3>บทวิเคราะห์ทุกรอบ</h3><span class="an-pill">บันทึกก่อนรู้ผลเสมอ</span></div>'+(preds||'<div class="an-empty">ยังไม่มีคำทำนาย</div>')+'</div>';
+
+    if(D.closed.length){
+      var cum=0, pts=D.closed.map(function(c){ return cum+=c.pnl; });
+      var rowsC=D.closed.slice().reverse().map(function(c){ return '<div><span>'+th(c.utc)+'</span><span><b>'+esc(c.id)+'</b> · '+esc(REASON[c.reason]||c.reason)+
+        ' · <span class="'+AB.cls(c.pnl)+'">'+sg(c.pnl)+' USD</span>'+(c.R!=null?' · '+sg(c.R)+'R':'')+'</span></div>'; }).join("");
+      left+='<div class="card"><div class="an-h"><h3>กำไรสะสม (ไม้ที่ปิด)</h3><span class="mono '+AB.cls(cum)+'">'+sg(cum)+' USD</span></div>'+
+        AB.spark([0].concat(pts),{h:140})+'<div class="an-rows" style="margin-top:10px">'+rowsC+'</div></div>';
+    } else {
+      left+='<div class="card"><div class="an-h"><h3>กำไรสะสม (ไม้ที่ปิด)</h3></div><div class="an-empty">ยังไม่มีไม้ที่ปิด กราฟจะขึ้นเมื่อปิดไม้แรก</div></div>';
+    }
+    $("an-left").innerHTML=left;
+
+    var pct=Math.min(100,S.n_scored/S.target*100), right="";
+    right+='<div class="card"><div class="an-h"><h3>เส้นชัย 60 คำทำนาย</h3><span class="mono am">'+S.n_scored+'/'+S.target+'</span></div>'+
+      '<div class="an-bar"><i style="width:'+Math.max(pct,1.5)+'%"></i></div>'+
+      '<div class="an-note">ผ่านเมื่อ Brier &lt; 0.24 และค่าเฉลี่ย R &gt; 0 (t ≥ 1.65) · ไม่ผ่านให้หยุด</div>'+
+      '<div class="an-rows" style="margin-top:8px"><div><span>Brier score</span><span>'+(S.brier==null?'ยังไม่มีผล (เดาสุ่ม = 0.250)':'<b>'+f2(S.brier,3)+'</b>')+'</span></div>'+
+      '<div><span>ทายทิศถูก</span><span>'+(S.hit==null?'ยังไม่มีผล':'<b>'+f2(S.hit*100,1)+'%</b>')+'</span></div>'+
+      '<div><span>ไม้ที่เทรดจริง</span><span><b>'+S.n_traded+'</b> ไม้</span></div></div></div>';
+
+    function lab(e){ var d=e.detail||{};
+      if(e.action==="sent") return "วาง pending order";
+      if(e.action==="fill") return "ไม้ถูกเปิดที่ <b>"+f2(d.price)+"</b>";
+      if(e.action==="breakeven") return "กันหน้าทุน: SL <b>"+f2(d.old_sl)+" → "+f2(d.new_sl)+"</b> ที่ "+sg(d.move_r)+"R";
+      if(e.action==="close") return "ปิดไม้ ("+esc(REASON[d.reason]||d.reason)+") <b>"+sg(d.pnl)+" USD</b>";
+      if(e.action==="rejected") return "ระบบปฏิเสธออเดอร์: "+esc(d.reason);
+      if(e.action==="cancel_expired") return "ยกเลิก pending ที่หมดอายุ";
+      if(e.action==="close_max_hold") return "ปิดไม้เพราะถือครบ 48 ชม.";
+      return esc(e.action); }
+    var ev=D.events.map(function(e){ var c=e.action==="close"?((e.detail||{}).pnl>=0?"cw":"cl"):e.action;
+      return '<div class="ev '+c+'"><div class="d">'+th(e.utc)+' น. · '+esc(e.id||"")+'</div><div class="b">'+lab(e)+'</div></div>'; }).join("");
+    right+='<div class="card"><div class="an-h"><h3>เหตุการณ์ของไม้</h3></div>'+(ev?'<div class="tl">'+ev+'</div>':'<div class="an-empty">ยังไม่มีเหตุการณ์</div>')+'</div>';
+
+    right+='<div class="card"><div class="an-h"><h3>กติกาที่บังคับในโค้ด</h3><span class="an-pill">'+esc(D.protocol)+'</span></div><div class="an-rows">'+
+      '<div><span>ความเสี่ยง</span><span>0.5% ของ balance ต่อไม้ · ครั้งละ 1 ไม้</span></div>'+
+      '<div><span>SL / TP</span><span>RR ≥ 1.5 · SL ≥ 0.5×ATR(H1) · ห้ามเลื่อน SL ออก</span></div>'+
+      '<div><span>กันหน้าทุน</span><span>กำไรถึง +1R → SL มาที่ทุน (เช็คทุก 10 นาที)</span></div>'+
+      '<div><span>ถือนานสุด</span><span>48 ชม. แล้วปิดอัตโนมัติ</span></div>'+
+      '<div><span>รอบวิเคราะห์</span><span>L 13:43 น. (ก่อนลอนดอน) · N หลังข่าว US 08:30 ET</span></div></div></div>';
+
+    var w=D.weekly&&D.weekly[D.weekly.length-1];
+    if(w){ var s=w.scenarios||{};
+      right+='<div class="card"><div class="an-h"><h3>มุมมองรายสัปดาห์ · '+esc(w.id)+'</h3><span class="an-pill">ทดลอง ไม่เทรดจริง</span></div>'+
+        '<div class="an-rat" style="margin-top:0">โอกาสปิดสัปดาห์ต่ำกว่า <b class="mono">'+f2(w.ref_close)+'</b> = <b class="mono">'+f2(w.p_close_below_ref*100,0)+'%</b></div><div class="an-rows">'+
+        Object.keys(s).map(function(k){ var v=s[k]; return '<div><span>'+(k==="bear"?"ขาลง":k==="bull"?"ขาขึ้น":"ออกข้าง")+' '+f2(v.p*100,0)+'%</span><span>'+
+          esc(v.trigger||(v.zone?"กรอบ "+v.zone.join("–"):""))+(v.targets?" → เป้า "+v.targets.join(" / "):"")+'</span></div>'; }).join("")+'</div></div>'; }
+    $("an-right").innerHTML=right;
+  }
+
+  AB.every(function(){
+    fetch("/data/ai-analyst.json",{cache:"no-store"}).then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(D){ render(D); AB.live(true); })
+      .catch(function(){ AB.live(false); if(!$("an-kpi").innerHTML) $("an-meta").innerHTML='<span class="an-pill r">โหลดข้อมูลไม่ได้ ลองรีเฟรชหน้า</span>'; });
+  });
+};
+</script>
+<script src="/assets/shell.js?v=3"></script>
+</body>
+</html>
