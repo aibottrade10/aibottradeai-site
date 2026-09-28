@@ -253,8 +253,13 @@ window.AB_INIT = function(){
 
     if(D.closed.length){
       var cum=0, pts=D.closed.map(function(c){ return cum+=c.pnl; });
-      var rowsC=D.closed.slice().reverse().map(function(c){ return '<div><span>'+th(c.utc)+'</span><span><b>'+esc(c.id)+'</b> · '+esc(REASON[c.reason]||c.reason)+
-        ' · <span class="'+AB.cls(c.pnl)+'">'+sg(c.pnl)+' USD</span>'+(c.R!=null?' · '+sg(c.R)+'R':'')+'</span></div>'; }).join("");
+      var rowsC=D.closed.slice().reverse().map(function(c){
+        var sl=c.sl==null?'—':(c.sl_final!=null&&c.sl_final!==c.sl?f2(c.sl)+' → '+f2(c.sl_final):f2(c.sl));
+        var det=(c.side?esc(c.side.toUpperCase())+' ':'')+c.volume+' lot'+(c.open_price!=null?' @ '+f2(c.open_price):'')+
+          ' · SL '+sl+' · TP '+(c.tp==null?'—':f2(c.tp))+' · ปิด '+f2(c.price);
+        return '<div><span>'+th(c.utc)+'</span><span><b>'+esc(c.id)+'</b> · '+esc(REASON[c.reason]||c.reason)+
+        ' · <span class="'+AB.cls(c.pnl)+'">'+sg(c.pnl)+' USD</span>'+(c.R!=null?' · '+sg(c.R)+'R':'')+
+        '<br><span class="mono" style="opacity:.8;font-size:.9em">'+det+'</span></span></div>'; }).join("");
       left+='<div class="card"><div class="an-h"><h3>กำไรสะสม (ไม้ที่ปิด)</h3><span class="mono '+AB.cls(cum)+'">'+sg(cum)+' USD</span></div>'+
         AB.spark([0].concat(pts),{h:140})+'<div class="an-rows" style="margin-top:10px">'+rowsC+'</div></div>';
     } else {
