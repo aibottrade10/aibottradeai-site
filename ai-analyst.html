@@ -66,6 +66,25 @@
   .tl .ev.breakeven::before{background:var(--cyan)} .tl .ev.cw::before{background:var(--green)} .tl .ev.cl::before{background:var(--red)}
   .an-empty{font-size:12px;color:var(--faint);font-family:var(--mono);border:1px dashed var(--line-2);border-radius:10px;padding:16px;text-align:center}
   .an-foot{margin-top:22px;font-size:11px;color:var(--faint)}
+  .an-st{margin-top:13px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:13px}
+  @media(max-width:860px){.an-st{grid-template-columns:1fr}}
+  .an-wr{display:grid;gap:10px;align-content:start}
+  .an-wr .big{font-family:var(--mono);font-size:40px;line-height:1;letter-spacing:-.02em}
+  .an-wl{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--panel-2);border:1px solid var(--line)}
+  .an-wl i{display:block;height:100%} .an-wl .w{background:var(--green)} .an-wl .b{background:var(--cyan);opacity:.7} .an-wl .l{background:var(--red)}
+  .an-lg{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .an-lg span{display:inline-flex;align-items:center;gap:5px} .an-lg i{width:7px;height:7px;border-radius:2px;display:inline-block}
+  .an-sg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  @media(max-width:560px){.an-sg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .an-sg div{background:var(--panel);padding:10px 12px;display:grid;gap:2px}
+  .an-sg span{font-size:10px;color:var(--faint)}
+  .an-sg b{font-family:var(--mono);font-size:15px;font-weight:500}
+  .an-ss{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+  .an-ss th{font-family:var(--mono);font-size:10px;color:var(--faint);font-weight:500;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+  .an-ss th:first-child,.an-ss td:first-child{text-align:left}
+  .an-ss td{font-family:var(--mono);text-align:right;padding:7px 8px;border-bottom:1px solid var(--line);color:var(--muted);white-space:nowrap}
+  .an-ss tr:last-child td{border-bottom:none}
+  .an-warn{font-size:11.5px;color:var(--amber);background:#e8b04b10;border:1px solid #e8b04b30;border-radius:9px;padding:8px 11px}
   .an-news{display:grid}
   .an-news a,.an-news .it{display:grid;gap:3px;padding:9px 0;border-top:1px solid var(--line)}
   .an-news>:first-child{border-top:none}
@@ -94,6 +113,7 @@
     <p class="plede">AI วิเคราะห์ทองคำวันละ 2 รอบ (ก่อนลอนดอนเปิด และหลังข่าวสหรัฐ) จาก 12 ปัจจัย บันทึกคำทำนายก่อนรู้ผลทุกครั้ง แล้ววางออเดอร์บนบัญชีเดโม่ตามกติกาที่ล็อกไว้ เพื่อวัดว่าชนะการเดาสุ่มจริงหรือไม่ ต้องครบ 60 คำทำนายจึงตัดสินผล · ตั้งแต่ v1.3 AI อ่านข่าวนอกตาราง (เฟด ภูมิรัฐศาสตร์ ภาษีนำเข้า) ประกอบทุกรอบ และเฝ้าราคาวิ่งผิดปกติทุก 10 นาที</p>
     <div class="an-meta" id="an-meta"><span class="an-pill">กำลังโหลด…</span></div>
     <div class="kpi" id="an-kpi"></div>
+    <div id="an-stats"></div>
     <div class="an-layout">
       <div class="an-col" id="an-left"></div>
       <div class="an-col" id="an-right"></div>
@@ -146,6 +166,38 @@ window.AB_INIT = function(){
       '<div class="k"><div class="l">Equity</div><div class="n">'+f2(acc.equity)+'</div><div class="sub '+AB.cls(fl)+'">กำไรลอย '+sg(fl)+'</div></div>'+
       '<div class="k"><div class="l">คำทำนายที่ให้คะแนนแล้ว</div><div class="n a">'+S.n_scored+' / '+S.target+'</div><div class="sub">บันทึกแล้ว '+D.predictions.length+' รายการ</div></div>'+
       '<div class="k"><div class="l">ค่าเฉลี่ย R ไม้ที่ปิด</div><div class="n '+AB.cls(S.mean_R)+'">'+(S.mean_R==null?"—":sg(S.mean_R))+'</div><div class="sub">ปิดแล้ว '+D.closed.length+' ไม้</div></div>';
+
+    var T=(D.trade_stats||{}), A=T.all||{n:0}, P=D.pred_stats||{};
+    function srow(lab,x){ if(!x||!x.n) return '<tr><td>'+lab+'</td><td colspan="6" style="text-align:left;color:var(--faint)">ยังไม่มีไม้ที่ปิด</td></tr>';
+      return '<tr><td>'+lab+'</td><td>'+x.n+'</td><td>'+x.wins+'/'+x.be+'/'+x.losses+'</td><td>'+f2(x.win_rate*100,1)+'%</td><td class="'+AB.cls(x.avg_R)+'">'+sg(x.avg_R)+'R</td><td class="'+AB.cls(x.sum_R)+'">'+sg(x.sum_R)+'R</td><td class="'+AB.cls(x.net)+'">'+sg(x.net)+'</td></tr>'; }
+    var st;
+    if(A.n){
+      var w=A.wins/A.n*100, b=A.be/A.n*100, l=A.losses/A.n*100;
+      st='<div class="card an-wr"><div class="an-h" style="margin-bottom:0"><h3>Win rate</h3><span class="an-pill">'+A.n+' ไม้ที่ปิด</span></div>'+
+        '<div class="big '+(A.win_rate>=0.5?"g":"r")+'">'+f2(A.win_rate*100,1)+'%</div>'+
+        '<div class="an-wl" role="img" aria-label="ชนะ '+A.wins+' เสมอทุน '+A.be+' แพ้ '+A.losses+'"><i class="w" style="width:'+w+'%"></i><i class="b" style="width:'+b+'%"></i><i class="l" style="width:'+l+'%"></i></div>'+
+        '<div class="an-lg"><span><i style="background:var(--green)"></i>ชนะ '+A.wins+'</span><span><i style="background:var(--cyan)"></i>เสมอทุน '+A.be+'</span><span><i style="background:var(--red)"></i>แพ้ '+A.losses+'</span></div>'+
+        (A.n<30?'<div class="an-warn">ตัวอย่างยังน้อย ('+A.n+' ไม้) ตัวเลขนี้ยังบอกฝีมือจริงไม่ได้ ต้องสะสมอย่างน้อย 30 ไม้ขึ้นไป</div>':'')+'</div>'+
+        '<div class="card"><div class="an-h"><h3>สถิติการเทรด</h3><span class="an-pill">จากดีลจริงใน MT5</span></div><div class="an-sg">'+
+        '<div><span>กำไรสุทธิ</span><b class="'+AB.cls(A.net)+'">'+sg(A.net)+' USD</b></div>'+
+        '<div><span>ค่าเฉลี่ยต่อไม้</span><b class="'+AB.cls(A.avg_R)+'">'+sg(A.avg_R)+'R</b></div>'+
+        '<div><span>รวมทั้งหมด</span><b class="'+AB.cls(A.sum_R)+'">'+sg(A.sum_R)+'R</b></div>'+
+        '<div><span>Profit factor</span><b>'+(A.pf==null?(A.losses?"—":"ยังไม่มีไม้แพ้"):f2(A.pf))+'</b></div>'+
+        '<div><span>กำไรเฉลี่ยไม้ชนะ</span><b class="g">'+(A.avg_win==null?"—":sg(A.avg_win))+'</b></div>'+
+        '<div><span>ขาดทุนเฉลี่ยไม้แพ้</span><b class="r">'+(A.avg_loss==null?"—":sg(A.avg_loss))+'</b></div>'+
+        '<div><span>ไม้ดีสุด / แย่สุด</span><b>'+sg(A.best_R)+' / '+sg(A.worst_R)+'R</b></div>'+
+        '<div><span>Drawdown สูงสุด</span><b class="'+(A.max_dd>0?"r":"")+'">'+(A.max_dd>0?"-":"")+f2(A.max_dd)+'</b></div>'+
+        '<div><span>ชน TP / ชน SL</span><b>'+A.tp+' / '+A.sl+'</b></div>'+
+        '<div><span>แพ้ติดกันสูงสุด</span><b>'+A.max_loss_streak+' ไม้</b></div>'+
+        '<div><span>รอบที่วางแผนเทรด</span><b>'+(P.n_trade_plans||0)+' / '+(P.n_logged||0)+'</b></div>'+
+        '<div><span>pending ถูกเปิดเป็นไม้</span><b>'+(P.n_filled||0)+' / '+(P.n_trade_plans||0)+'</b></div></div>'+
+        '<div class="an-scroll"><table class="an-ss"><thead><tr><th>แยกตามรอบ</th><th>ไม้</th><th>ชนะ/เสมอ/แพ้</th><th>Win rate</th><th>เฉลี่ย</th><th>รวม</th><th>USD</th></tr></thead><tbody>'+
+        srow("รอบ L ก่อนลอนดอน",T.L)+srow("รอบ N หลังข่าว US",T.N)+'</tbody></table></div>'+
+        '<div class="an-note">ไม้ที่ปิดที่ทุน (|R| &lt; 0.1 จากระบบกันหน้าทุน) นับเป็น "เสมอทุน" ไม่นับเป็นชนะ · R = กำไรหารด้วยความเสี่ยงเริ่มต้นของไม้นั้น</div></div>';
+    } else {
+      st='<div class="card" style="grid-column:1/-1"><div class="an-h"><h3>Win rate และสถิติการเทรด</h3></div><div class="an-empty">ยังไม่มีไม้ที่ปิด สถิติจะขึ้นเมื่อปิดไม้แรก</div></div>';
+    }
+    $("an-stats").innerHTML='<div class="an-st">'+st+'</div>';
 
     var left="";
     if(pos && pos.orig_sl){
